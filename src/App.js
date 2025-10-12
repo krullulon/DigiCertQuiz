@@ -15,9 +15,9 @@ const firebaseConfig = {
 
 const QUESTIONS = [
   {
-    question: "What is the capital of Japan?",
-    options: ["Seoul", "Tokyo", "Beijing", "Bangkok"],
-    correctAnswer: 1,
+    question: "Why is key sovereignty important for global organizations?",
+    options: ["It helps reduce the cost of encryption hardware", "It allows data to be encrypted across multiple clouds", "It ensures compliance with data privacy laws and prevents unauthorized access by foreign entities", "It simplified password management for employees"],
+    correctAnswer: 3,
   },
   {
     question: "Which planet is known as the Red Planet?",
