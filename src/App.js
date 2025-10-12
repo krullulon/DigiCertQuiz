@@ -13,6 +13,13 @@ const firebaseConfig = {
   measurementId: "G-L5GNC3T94X",
 };
 
+// Per-quiz identifier for leaderboard partitioning
+const QUIZ_ID = "week-1-key-sovereignty";
+
+// Simple name validation (2–30 allowed characters)
+const NAME_REGEX = /^[A-Za-z0-9 .,'_-]{2,30}$/;
+const sanitizeName = (s) => s.trim().replace(/\s+/g, " ");
+
 const QUESTIONS = [
     {
     question: "What best defines key sovereignty?",
@@ -71,15 +78,14 @@ export default function App() {
   const loadLeaderboard = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${DB_URL}/leaderboard.json`);
+      const response = await fetch(`${DB_URL}/leaderboard/${QUIZ_ID}.json`);
       if (response.ok) {
         const data = await response.json();
-        if (data) {
-          const leaderboardArray = Object.values(data).sort(
-            (a, b) => b.score - a.score
-          );
-          setLeaderboard(leaderboardArray);
-        }
+        const values = data ? Object.values(data) : [];
+        const leaderboardArray = values.sort(
+          (a, b) => (b.score - a.score) || (b.timestamp - a.timestamp)
+        );
+        setLeaderboard(leaderboardArray);
       }
       setLoading(false);
     } catch (err) {
@@ -94,13 +100,26 @@ export default function App() {
   // Save score to Firebase
   const saveScore = async (name, score) => {
     try {
+      // Optional gentle friction: prevent repeat submissions per quiz
+      try {
+        if (typeof localStorage !== "undefined" && localStorage.getItem(`submitted:${QUIZ_ID}`)) {
+          return; // Already submitted; allow play but don't save again
+        }
+      } catch (_) {}
+
+      // Clamp score to a safe maximum
+      const maxPossible = MAX_TIME * QUESTIONS.length;
+      const safeScore = Math.max(0, Math.min(score, maxPossible));
+
       const newEntry = {
         name: name,
-        score: score,
-        timestamp: Date.now(),
+        score: safeScore,
+        // Use server timestamp to avoid client tampering
+        timestamp: { ".sv": "timestamp" },
+        quizId: QUIZ_ID,
       };
 
-      const response = await fetch(`${DB_URL}/leaderboard.json`, {
+      const response = await fetch(`${DB_URL}/leaderboard/${QUIZ_ID}.json`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -110,6 +129,11 @@ export default function App() {
 
       if (response.ok) {
         await loadLeaderboard();
+        try {
+          if (typeof localStorage !== "undefined") {
+            localStorage.setItem(`submitted:${QUIZ_ID}`, "1");
+          }
+        } catch (_) {}
       }
     } catch (err) {
       console.error("Error saving score:", err);
@@ -135,11 +159,15 @@ export default function App() {
   }, [screen, showFeedback, timeLeft]);
 
   const handleStart = () => {
-    if (playerName.trim()) {
-      setScreen("question");
-      setTimeLeft(MAX_TIME);
-      setError("");
+    const clean = sanitizeName(playerName);
+    if (!NAME_REGEX.test(clean)) {
+      setError("Please enter a valid name (2–30 characters).");
+      return;
     }
+    setPlayerName(clean);
+    setScreen("question");
+    setTimeLeft(MAX_TIME);
+    setError("");
   };
 
   const handleSubmitAnswer = () => {
