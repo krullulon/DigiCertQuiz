@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Clock, Trophy, CheckCircle, XCircle } from "lucide-react";
 
 // Firebase configuration (client keys are not secrets; rules must enforce security)
@@ -33,7 +33,7 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
   const [error, setError] = useState("");
 
   // Load leaderboard for this quiz
-  const loadLeaderboard = async () => {
+  const loadLeaderboard = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(`${DB_URL}/leaderboard/${quizId}.json`);
@@ -53,7 +53,7 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
       );
       setLoading(false);
     }
-  };
+  }, [quizId]);
 
   // Save score for this quiz
   const saveScore = async (name, score) => {
@@ -107,8 +107,7 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
     if (screen === "intro") {
       loadLeaderboard();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [screen, quizId]);
+  }, [screen, loadLeaderboard]);
 
   useEffect(() => {
     if (screen === "question" && !showFeedback && timeLeft > 0) {
@@ -397,4 +396,3 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
 
   return null;
 }
-
