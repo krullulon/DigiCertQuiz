@@ -47,7 +47,7 @@ const QUESTIONS = [
   {
     question: "What is DigiCert's position on offering private CA to customers",
     options: ["Always offer our multi-tenant SaaS private CA", "Always offer our On-Prem CA", "Always lead with multi-tenant SaaS private CA but offer On-Prem CA if key sovereignty is a deal-breaker", "Present both options to the customer: multi-tenant SaaS private CA and On-Prem CA Hybrid"],
-    correctAnswer: 2
+    correctAnswer: 2,
   }
 ];
 
