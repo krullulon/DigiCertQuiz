@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install)",
+      "Bash(node:*)",
+      "Read(//usr/local/bin/**)",
+      "Bash(brew:*)",
+      "Bash(npm --version)",
+      "Bash(npm start)",
+      "Bash(rm:*)",
+      "Bash(npm install:*)",
+      "Bash(npx tailwindcss init:*)",
+      "Bash(npm run build)",
+      "Bash(/usr/bin/git status)",
+      "Bash(cat:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
