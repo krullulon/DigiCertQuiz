@@ -40,15 +40,15 @@ const QUESTIONS = [
       "Using a cloud provider's default encryption keys",
       "Storing keys in Hardware Security Modules (HSMs) controlled by the customer",
       "Allowing third parties to rotate encryption keys automatically",
-      "Sharing encryption keys with the cloud provider for backup"
+      "Sharing encryption keys with the cloud provider for backup",
         ],
     correctAnswer: 1,
   },
   {
     question: "What is DigiCert's position on offering private CA to customers",
-    options: ["Always offer our multi-tenant SaaS private CA", "Always offer our On-Prem CA", "Always lead with multi-tenant SaaS private CA but offer On-Prem CA if key sovereignty is a deal-breaker", "Present both options to the customer: multi-tenant SaaS private CA and On-Prem CA Hybrid"
-    correctAnswer: 2,
-  },
+    options: ["Always offer our multi-tenant SaaS private CA", "Always offer our On-Prem CA", "Always lead with multi-tenant SaaS private CA but offer On-Prem CA if key sovereignty is a deal-breaker", "Present both options to the customer: multi-tenant SaaS private CA and On-Prem CA Hybrid"],
+    correctAnswer: 2
+  }
 ];
 
 const MAX_TIME = 180;
