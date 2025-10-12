@@ -187,7 +187,7 @@ export default function App() {
           <div className="text-center mb-8">
             <Trophy className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
             <h1 className="text-4xl font-bold text-gray-800 mb-2">
-              Timed Quiz Challenge
+              DigiCert Weekly Product Quiz #1
             </h1>
             <p className="text-gray-600">
               Test your knowledge against the clock!
