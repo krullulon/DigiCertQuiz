@@ -437,8 +437,7 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
           <div className="bg-gradient-to-r from-yellow-50 to-yellow-100 rounded-lg p-6 mb-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-2xl font-bold text-gray-800">Global Leaderboard</h2>
-              <div className="flex items-center space-x-3">
-                <span className="text-sm text-gray-700">Total: {leaderboard.length}</span>
+              <div className="flex items-center">
                 <button
                   onClick={loadLeaderboard}
                   className="px-3 py-1.5 text-sm rounded bg-blue-600 text-white hover:bg-blue-700"
