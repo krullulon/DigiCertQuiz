@@ -73,8 +73,8 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
       const newEntry = {
         name: name,
         score: safeScore,
-        // Numeric timestamp to satisfy DB rules
-        timestamp: Date.now(),
+        // Use server timestamp to avoid client clock skew
+        timestamp: { ".sv": "timestamp" },
       };
 
       const response = await fetch(
@@ -196,7 +196,8 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
       setShowFeedback(false);
       setIsCorrect(false);
     } else {
-      const finalScore = totalScore + (isCorrect ? timeLeft : 0);
+      // Final score already includes the last question if correct
+      const finalScore = totalScore;
       await saveScore(playerName, finalScore);
       setScreen("leaderboard");
     }
