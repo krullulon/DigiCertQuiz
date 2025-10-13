@@ -286,6 +286,12 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
             >
               Start Quiz
             </button>
+            <button
+              onClick={() => setScreen("leaderboard")}
+              className="w-full border-2 border-blue-600 text-blue-700 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-all"
+            >
+              View Full Leaderboard
+            </button>
           </div>
         </div>
       </div>
