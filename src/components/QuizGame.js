@@ -10,7 +10,7 @@ const sanitizeName = (s) => s.trim().replace(/\s+/g, " ");
 
 const SCREEN_BACKGROUND_STYLE = {
   backgroundImage:
-    'url("/images/quiz_background.png"), linear-gradient(to bottom right, #3b82f6, #9333ea)',
+    'url("/images/quiz_background2.png"), linear-gradient(to bottom right, #3b82f6, #9333ea)',
   backgroundRepeat: "no-repeat, no-repeat",
   backgroundAttachment: "fixed, fixed",
   backgroundPosition: "top left, center",
