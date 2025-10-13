@@ -19,6 +19,7 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
   const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [alreadySubmitted, setAlreadySubmitted] = useState(false);
 
   // Load leaderboard for this quiz
   const loadLeaderboard = useCallback(async () => {
@@ -84,6 +85,7 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
         try {
           if (typeof localStorage !== "undefined") {
             localStorage.setItem(`submitted:${quizId}`, "1");
+            setAlreadySubmitted(true);
           }
         } catch (_) {}
       }
@@ -100,6 +102,16 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
       loadLeaderboard();
     }
   }, [screen, loadLeaderboard]);
+
+  // Detect if the user has already submitted a score for this quiz
+  useEffect(() => {
+    try {
+      const flag = typeof localStorage !== "undefined" && localStorage.getItem(`submitted:${quizId}`);
+      setAlreadySubmitted(Boolean(flag));
+    } catch (_) {
+      setAlreadySubmitted(false);
+    }
+  }, [quizId]);
 
   useEffect(() => {
     if (screen === "question" && !showFeedback && timeLeft > 0) {
@@ -178,6 +190,12 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
             </div>
           )}
 
+          {alreadySubmitted && (
+            <div className="bg-yellow-50 border-2 border-yellow-200 text-yellow-800 px-4 py-3 rounded mb-4">
+              You’ve already played this quiz. Thanks for participating! You can view the leaderboard below.
+            </div>
+          )}
+
           <div className="bg-blue-50 rounded-lg p-6 mb-6">
             <h2 className="text-xl font-semibold text-gray-800 mb-3">How It Works:</h2>
             <ul className="space-y-2 text-gray-700">
@@ -221,10 +239,11 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
               onChange={(e) => setPlayerName(e.target.value)}
               placeholder="Enter your name"
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={alreadySubmitted}
             />
             <button
               onClick={handleStart}
-              disabled={!playerName.trim()}
+              disabled={!playerName.trim() || alreadySubmitted}
               className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-lg font-semibold text-lg hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Start Quiz
@@ -383,12 +402,14 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
             </div>
           </div>
 
-          <button
-            onClick={handleRestart}
-            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-lg font-semibold text-lg hover:from-blue-700 hover:to-purple-700 transition-all"
-          >
-            Take Quiz Again
-          </button>
+          {!alreadySubmitted && (
+            <button
+              onClick={handleRestart}
+              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-lg font-semibold text-lg hover:from-blue-700 hover:to-purple-700 transition-all"
+            >
+              Take Quiz Again
+            </button>
+          )}
         </div>
       </div>
     );
