@@ -73,7 +73,8 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
       const newEntry = {
         name: name,
         score: safeScore,
-        timestamp: { ".sv": "timestamp" },
+        // Use client timestamp to satisfy current DB rules expecting a number
+        timestamp: Date.now(),
         quizId: quizId,
       };
 
@@ -94,6 +95,12 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
             setAlreadySubmitted(true);
           }
         } catch (_) {}
+      } else {
+        try {
+          const errText = await response.text();
+          console.error("Save failed:", response.status, errText);
+        } catch (_) {}
+        setError("Could not save score. Please try again.");
       }
     } catch (err) {
       console.error("Error saving score:", err);
