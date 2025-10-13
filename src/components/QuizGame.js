@@ -20,7 +20,7 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [alreadySubmitted, setAlreadySubmitted] = useState(false);
-  const [authUid, setAuthUid] = useState(null);
+  const [finalScoreValue, setFinalScoreValue] = useState(null);
 
   // Load leaderboard for this quiz
   const loadLeaderboard = useCallback(async () => {
@@ -132,7 +132,6 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
       try {
         const { uid } = await getValidAuth();
         if (cancelled) return;
-        setAuthUid(uid);
         const res = await fetch(`${DB_URL}/leaderboard/${quizId}/${uid}.json`, {
           cache: "no-store",
         });
@@ -198,6 +197,7 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
     } else {
       // Final score already includes the last question if correct
       const finalScore = totalScore;
+      setFinalScoreValue(finalScore);
       await saveScore(playerName, finalScore);
       setScreen("leaderboard");
     }
@@ -213,6 +213,7 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
     setIsCorrect(false);
     setTotalScore(0);
     setError("");
+    setFinalScoreValue(null);
   };
 
   if (screen === "intro") {
@@ -294,7 +295,7 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
               Start Quiz
             </button>
             <button
-              onClick={() => setScreen("leaderboard")}
+              onClick={() => { setFinalScoreValue(null); setScreen("leaderboard"); }}
               className="w-full border-2 border-blue-600 text-blue-700 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-all"
             >
               View the leaderboard top 10
@@ -402,9 +403,10 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
   }
 
   if (screen === "leaderboard") {
-    const currentPlayerEntry = leaderboard.find(
-      (entry) => entry.name === playerName && entry.score === totalScore + (isCorrect ? timeLeft : 0)
-    );
+    const currentPlayerEntry =
+      finalScoreValue != null && playerName
+        ? leaderboard.find((entry) => entry.name === playerName && entry.score === finalScoreValue)
+        : null;
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center p-4">
@@ -420,10 +422,16 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
               alt="DigiCert"
               className="h-20 mx-auto mb-4 object-contain"
             />
-            <h1 className="text-4xl font-bold text-gray-800 mb-2">Quiz Complete!</h1>
-            <p className="text-xl text-gray-600">
-              {playerName}, your final score: <span className="font-bold text-blue-600">{totalScore + (isCorrect ? timeLeft : 0)}</span>
-            </p>
+            {finalScoreValue != null && playerName ? (
+              <>
+                <h1 className="text-4xl font-bold text-gray-800 mb-2">Quiz Complete!</h1>
+                <p className="text-xl text-gray-600">
+                  {playerName}, your final score: <span className="font-bold text-blue-600">{finalScoreValue}</span>
+                </p>
+              </>
+            ) : (
+              <h1 className="text-4xl font-bold text-gray-800 mb-2">Leaderboard</h1>
+            )}
           </div>
 
           <div className="bg-gradient-to-r from-yellow-50 to-yellow-100 rounded-lg p-6 mb-6">
