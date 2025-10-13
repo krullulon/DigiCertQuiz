@@ -73,9 +73,8 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
       const newEntry = {
         name: name,
         score: safeScore,
-        // Use client timestamp to satisfy current DB rules expecting a number
+        // Numeric timestamp to satisfy DB rules
         timestamp: Date.now(),
-        quizId: quizId,
       };
 
       const response = await fetch(
@@ -409,6 +408,11 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-2xl p-8 max-w-2xl w-full">
+          {error && (
+            <div className="mb-4 p-3 rounded bg-red-100 border border-red-300 text-red-800">
+              {error}
+            </div>
+          )}
           <div className="text-center mb-8">
             <img
               src="/images/digicert-blue-logo-large.jpg"
