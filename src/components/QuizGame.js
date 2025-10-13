@@ -20,6 +20,8 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [alreadySubmitted, setAlreadySubmitted] = useState(false);
+  const [nameAlreadyUsed, setNameAlreadyUsed] = useState(false);
+  const [authUid, setAuthUid] = useState(null);
 
   // Load leaderboard for this quiz
   const loadLeaderboard = useCallback(async () => {
@@ -113,6 +115,36 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
     }
   }, [quizId]);
 
+  // Also check server for an existing record for this device's anonymous UID
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { uid } = await getValidAuth();
+        if (cancelled) return;
+        setAuthUid(uid);
+        const res = await fetch(`${DB_URL}/leaderboard/${quizId}/${uid}.json`);
+        if (!cancelled && res.ok) {
+          const data = await res.json();
+          if (data) setAlreadySubmitted(true);
+        }
+      } catch (_) {}
+    })();
+    return () => { cancelled = true; };
+  }, [quizId]);
+
+  // Check if the entered name already exists on the leaderboard (case-insensitive)
+  useEffect(() => {
+    const norm = (s) => sanitizeName(s).toLowerCase();
+    const current = norm(playerName);
+    if (!current) {
+      setNameAlreadyUsed(false);
+      return;
+    }
+    const exists = leaderboard.some((e) => norm(e.name) === current);
+    setNameAlreadyUsed(exists);
+  }, [playerName, leaderboard]);
+
   useEffect(() => {
     if (screen === "question" && !showFeedback && timeLeft > 0) {
       const timer = setInterval(() => {
@@ -190,7 +222,7 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
             </div>
           )}
 
-          {alreadySubmitted && (
+          {(alreadySubmitted || nameAlreadyUsed) && (
             <div className="bg-yellow-50 border-2 border-yellow-200 text-yellow-800 px-4 py-3 rounded mb-4">
               You’ve already played this quiz. Thanks for participating! You can view the leaderboard below.
             </div>
@@ -239,11 +271,11 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
               onChange={(e) => setPlayerName(e.target.value)}
               placeholder="Enter your name"
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              disabled={alreadySubmitted}
+              disabled={alreadySubmitted || nameAlreadyUsed}
             />
             <button
               onClick={handleStart}
-              disabled={!playerName.trim() || alreadySubmitted}
+              disabled={!playerName.trim() || alreadySubmitted || nameAlreadyUsed}
               className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-lg font-semibold text-lg hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Start Quiz
@@ -402,7 +434,7 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
             </div>
           </div>
 
-          {!alreadySubmitted && (
+          {!(alreadySubmitted || nameAlreadyUsed) && (
             <button
               onClick={handleRestart}
               className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-lg font-semibold text-lg hover:from-blue-700 hover:to-purple-700 transition-all"
