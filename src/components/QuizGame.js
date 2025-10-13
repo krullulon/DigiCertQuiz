@@ -1,19 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { Clock, CheckCircle, XCircle } from "lucide-react";
-
-// Firebase configuration (client keys are not secrets; rules must enforce security)
-const firebaseConfig = {
-  apiKey: "AIzaSyA1yq_R7RJF25bYpAAtxIeVz_t-V-BJcUk",
-  authDomain: "digicert-product-quiz.firebaseapp.com",
-  databaseURL: "https://digicert-product-quiz-default-rtdb.firebaseio.com",
-  projectId: "digicert-product-quiz",
-  storageBucket: "digicert-product-quiz.firebasestorage.app",
-  messagingSenderId: "991829115649",
-  appId: "1:991829115649:web:194bc1beab20a5f6011100",
-  measurementId: "G-L5GNC3T94X",
-};
-
-const DB_URL = firebaseConfig.databaseURL;
+import { DB_URL } from "../services/firebaseConfig";
+import { getValidAuth } from "../services/firebaseAuth";
 
 // Simple name validation (2–30 allowed characters)
 const NAME_REGEX = /^[A-Za-z0-9 .,'_-]{2,30}$/;
@@ -72,6 +60,9 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
       const maxPossible = maxTime * questions.length;
       const safeScore = Math.max(0, Math.min(score, maxPossible));
 
+      // Ensure authenticated uid and token for protected write
+      const { idToken, uid } = await getValidAuth();
+
       const newEntry = {
         name: name,
         score: safeScore,
@@ -79,13 +70,14 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
         quizId: quizId,
       };
 
-      const response = await fetch(`${DB_URL}/leaderboard/${quizId}.json`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newEntry),
-      });
+      const response = await fetch(
+        `${DB_URL}/leaderboard/${quizId}/${uid}.json?auth=${encodeURIComponent(idToken)}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newEntry),
+        }
+      );
 
       if (response.ok) {
         await loadLeaderboard();
