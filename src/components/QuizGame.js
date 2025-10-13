@@ -275,10 +275,10 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
                     className="grid grid-cols-3 items-center bg-white rounded-lg px-4 py-3 text-sm"
                     style={{ gridTemplateColumns: "1fr auto auto" }}
                   >
-                    <span className="text-gray-700 font-medium">
+                    <span className="text-gray-800 font-bold text-base md:text-lg">
                       {index + 1}. {entry.name}
                     </span>
-                    <span className="font-semibold text-blue-600 text-base md:text-lg">
+                    <span className="font-semibold text-blue-600 text-base md:text-lg pr-4 md:pr-6">
                       {entry.score}
                     </span>
                     <Trophy
