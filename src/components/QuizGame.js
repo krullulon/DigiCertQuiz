@@ -26,7 +26,9 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
   const loadLeaderboard = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${DB_URL}/leaderboard/${quizId}.json`);
+      const response = await fetch(`${DB_URL}/leaderboard/${quizId}.json`, {
+        cache: "no-store",
+      });
       if (response.ok) {
         const data = await response.json();
         const values = data ? Object.values(data) : [];
@@ -99,7 +101,7 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
   };
 
   useEffect(() => {
-    if (screen === "intro") {
+    if (screen === "intro" || screen === "leaderboard") {
       loadLeaderboard();
     }
   }, [screen, loadLeaderboard]);
@@ -122,7 +124,9 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
         const { uid } = await getValidAuth();
         if (cancelled) return;
         setAuthUid(uid);
-        const res = await fetch(`${DB_URL}/leaderboard/${quizId}/${uid}.json`);
+        const res = await fetch(`${DB_URL}/leaderboard/${quizId}/${uid}.json`, {
+          cache: "no-store",
+        });
         if (!cancelled && res.ok) {
           const data = await res.json();
           if (data) setAlreadySubmitted(true);
