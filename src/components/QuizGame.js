@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { Clock, CheckCircle, XCircle } from "lucide-react";
+import { Clock, CheckCircle, XCircle, Trophy } from "lucide-react";
 import { DB_URL } from "../services/firebaseConfig";
 import { getValidAuth } from "../services/firebaseAuth";
 
 // Simple name validation (2–30 allowed characters)
 const NAME_REGEX = /^[A-Za-z0-9 .,'_-]{2,30}$/;
+const TROPHY_COLORS = ["text-yellow-500", "text-gray-400", "text-orange-500"];
 const sanitizeName = (s) => s.trim().replace(/\s+/g, " ");
 
 export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
@@ -269,9 +270,20 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
               <h3 className="font-semibold text-gray-800 mb-2">Current Top 3:</h3>
               <div className="space-y-1">
                 {leaderboard.slice(0, 3).map((entry, index) => (
-                  <div key={index} className="flex justify-between text-sm">
-                    <span className="text-gray-700">{index + 1}. {entry.name}</span>
-                    <span className="font-bold text-blue-600">{entry.score}</span>
+                  <div
+                    key={index}
+                    className="grid grid-cols-3 items-center bg-white rounded-lg px-4 py-3 text-sm"
+                    style={{ gridTemplateColumns: "1fr auto auto" }}
+                  >
+                    <span className="text-gray-700 font-medium">
+                      {index + 1}. {entry.name}
+                    </span>
+                    <span className="font-semibold text-blue-600 text-base md:text-lg">
+                      {entry.score}
+                    </span>
+                    <Trophy
+                      className={`w-9 h-9 ${TROPHY_COLORS[index] ?? "text-blue-400"} justify-self-center`}
+                    />
                   </div>
                 ))}
               </div>
