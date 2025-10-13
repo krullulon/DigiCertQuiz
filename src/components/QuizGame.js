@@ -26,13 +26,16 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
   const loadLeaderboard = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${DB_URL}/leaderboard/${quizId}.json`, {
+      const url = `${DB_URL}/leaderboard/${quizId}.json?t=${Date.now()}`;
+      const response = await fetch(url, {
         cache: "no-store",
       });
       if (response.ok) {
         const data = await response.json();
-        const values = data ? Object.values(data) : [];
-        const leaderboardArray = values.sort(
+        const entries = data && typeof data === 'object' ? Object.values(data) : [];
+        // Log count for troubleshooting
+        try { console.debug('[leaderboard]', quizId, 'entries:', entries.length); } catch (_) {}
+        const leaderboardArray = entries.sort(
           (a, b) => (b.score - a.score) || (b.timestamp - a.timestamp)
         );
         setLeaderboard(leaderboardArray);
@@ -406,7 +409,19 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
           </div>
 
           <div className="bg-gradient-to-r from-yellow-50 to-yellow-100 rounded-lg p-6 mb-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">Global Leaderboard</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-bold text-gray-800">Global Leaderboard</h2>
+              <div className="flex items-center space-x-3">
+                <span className="text-sm text-gray-700">Total: {leaderboard.length}</span>
+                <button
+                  onClick={loadLeaderboard}
+                  className="px-3 py-1.5 text-sm rounded bg-blue-600 text-white hover:bg-blue-700"
+                  disabled={loading}
+                >
+                  {loading ? 'Refreshing…' : 'Refresh'}
+                </button>
+              </div>
+            </div>
             <div className="space-y-2">
               {loading ? (
                 <p className="text-center text-gray-600">Loading leaderboard...</p>
