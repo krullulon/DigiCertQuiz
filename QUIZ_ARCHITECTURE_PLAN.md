@@ -1,12 +1,23 @@
 # DigiCert Quiz - Multi-Quiz Architecture Plan
 
+## Status Update (Implemented)
+
+The refactor and security hardening are live. Highlights:
+- Clean URLs with React Router (`/quiz/:quizId`), root redirects to current quiz
+- Quiz UI extracted to `src/components/QuizGame.js`; Week 1 data in `src/quizzes/week-1-key-sovereignty.js`
+- Per‑quiz, per‑user leaderboard under `leaderboard/{quizId}/{uid}` with Anonymous Auth
+- Rules validate name/score/timestamp; updates allowed only if higher
+- First‑score‑only UX; intro shows Top 3; leaderboard shows Top 10
+- DigiCert branding added; icon sizes improved; final score display corrected
+
 ## Overview
 
-### Current State (Single Quiz)
-- One hardcoded quiz with 5 questions in `App.js`
-- Single leaderboard in Firebase at `/leaderboard`
-- One URL: `digi-cert-quiz.vercel.app`
-- To change quizzes, we must edit code and redeploy
+### Current State (Post‑Refactor)
+- Router-based app; `App.js` only defines routes
+- Quiz logic in `src/components/QuizGame.js`; Week 1 data file present
+- Clean URLs (example): `/quiz/week-1-key-sovereignty`; root redirects to current quiz
+- Leaderboard per quiz at `/leaderboard/{quizId}/{uid}` (Anonymous Auth for writes)
+- Intro shows Top 3; dedicated leaderboard view shows Top 10
 
 ### Goal (Multiple Quizzes)
 - Multiple quizzes, one per week
@@ -28,7 +39,7 @@
 
 ## Architecture Design
 
-### File Structure
+### File Structure (Current)
 
 ```
 DigiCertQuiz/
@@ -37,14 +48,18 @@ DigiCertQuiz/
 │   ├── index.js                        # Entry point (unchanged)
 │   ├── styles.css                      # Global styles (unchanged)
 │   ├── components/
-│   │   └── QuizGame.js                 # Quiz UI component (extracted from current App.js)
+│   │   └── QuizGame.js                 # Quiz UI component
+│   ├── services/
+│   │   ├── firebaseConfig.js           # Firebase config + DB URL
+│   │   └── firebaseAuth.js             # Anonymous Auth (sign-in/refresh)
 │   └── quizzes/
 │       ├── index.js                    # Quiz registry & current quiz config
 │       ├── week-1-key-sovereignty.js   # Week 1 quiz data
 │       ├── week-2-certificate-lifecycle.js  # Week 2 quiz data (example)
 │       └── README.md                   # Instructions for adding quizzes
-├── public/                             # Static assets (unchanged)
-├── package.json                        # Dependencies (will add react-router-dom)
+├── public/
+│   └── images/digicert-blue-logo-large.jpg  # Branding asset
+├── package.json                        # Dependencies (includes react-router-dom)
 └── QUIZ_ARCHITECTURE_PLAN.md          # This document
 ```
 
@@ -179,58 +194,53 @@ digi-cert-quiz.vercel.app/quiz/invalid-quiz-id
 
 ## Firebase Leaderboard Strategy
 
-### Current Structure (Single Quiz)
-```
-/leaderboard/
-  ├── {entryId1}: { name, score, timestamp }
-  ├── {entryId2}: { name, score, timestamp }
-  └── ...
-```
-
-### New Structure (Multiple Quizzes)
+### Current Structure (Per‑Quiz, Per‑User)
 ```
 /leaderboard/
   ├── week-1-key-sovereignty/
-  │   ├── {entryId1}: { name, score, timestamp }
-  │   ├── {entryId2}: { name, score, timestamp }
+  │   ├── {uidA}: { name, score, timestamp }
+  │   ├── {uidB}: { name, score, timestamp }
   │   └── ...
-  ├── week-2-certificate-lifecycle/
-  │   ├── {entryId1}: { name, score, timestamp }
-  │   └── ...
-  └── week-3-pki-fundamentals/
-      └── ...
+  └── week-2-.../
+      └── {uidX}: { name, score, timestamp }
 ```
 
-### Implementation
+### Implementation (in app)
 
-**Save Score:**
+Save score (simplified):
 ```javascript
-const DB_URL = firebaseConfig.databaseURL;
-const quizId = "week-1-key-sovereignty";
-
-await fetch(`${DB_URL}/leaderboard/${quizId}.json`, {
-  method: "POST",
-  body: JSON.stringify({ name, score, timestamp })
+// Ensure Anonymous Auth; get { uid, idToken }
+await fetch(`${DB_URL}/leaderboard/${quizId}/${uid}.json?auth=${idToken}`, {
+  method: 'PUT',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ name, score, timestamp: { '.sv': 'timestamp' } })
 });
 ```
 
-**Load Leaderboard:**
+Load leaderboard:
 ```javascript
-const response = await fetch(`${DB_URL}/leaderboard/${quizId}.json`);
-const data = await response.json();
+const res = await fetch(`${DB_URL}/leaderboard/${quizId}.json`, { cache: 'no-store' });
+const data = await res.json();
+const entries = data ? Object.values(data) : [];
+entries.sort((a,b) => (b.score - a.score) || (b.timestamp - a.timestamp));
 ```
 
+### Rules (published)
+- Reads are public; writes require auth and are allowed only for the user’s own `{uid}`.
+- Validates: name pattern (2–30 chars), score range (0–900 for Week 1), timestamp <= now.
+- Allows create, or update only if the new score is higher.
+
 ### Benefits
-- ✅ Each quiz has independent leaderboard
-- ✅ Scores never mix between quizzes
-- ✅ Can compare performance across weeks
-- ✅ Easy to add global leaderboard later (aggregate all quizzes)
+- ✅ One record per user/device per quiz
+- ✅ Safe updates (only if higher)
+- ✅ Server timestamps; resistant to client clock skew
+- ✅ Clear partitioning per quiz
 
 ---
 
 ## Implementation Steps
 
-### Phase 1: Setup & Dependencies
+### Phase 1: Setup & Dependencies (done)
 
 **Step 1.1:** Install React Router
 ```bash
@@ -243,7 +253,7 @@ mkdir src/components
 mkdir src/quizzes
 ```
 
-### Phase 2: Extract Quiz Component
+### Phase 2: Extract Quiz Component (done)
 
 **Step 2.1:** Create `components/QuizGame.js`
 - Copy all current quiz logic from `App.js`
@@ -255,7 +265,7 @@ mkdir src/quizzes
 - Keep all existing state (screen, playerName, currentQuestion, etc.)
 - Add quiz data as props instead of constants
 
-### Phase 3: Create Quiz Data Files
+### Phase 3: Create Quiz Data Files (done)
 
 **Step 3.1:** Create `quizzes/week-1-key-sovereignty.js`
 - Export quiz object with id, title, description, questions
@@ -271,7 +281,7 @@ mkdir src/quizzes
 - Template for quiz files
 - Guidelines for quiz IDs
 
-### Phase 4: Implement Routing
+### Phase 4: Implement Routing (done)
 
 **Step 4.1:** Update `App.js`
 - Import React Router components
@@ -617,7 +627,7 @@ CMS or admin interface:
 ## Questions & Answers
 
 ### Q: What happens to the current production URL?
-**A:** The root URL (`digi-cert-quiz.vercel.app/`) will redirect to the current quiz. Week 1 will now be at `/quiz/week-1-key-sovereignty`.
+**A:** The root URL (`digi-cert-quiz.vercel.app/`) redirects to the current quiz. Week 1 is at `/quiz/week-1-key-sovereignty`.
 
 ### Q: Can we change old quizzes after they're deployed?
 **A:** Yes! Just edit the quiz file and redeploy. The URL stays the same, content updates.
@@ -675,21 +685,20 @@ CMS or admin interface:
 - Create quiz data structure
 - Set up registry
 
-**Phase 4 (Routing):** 30-45 minutes
-- Implement React Router
-- Handle URL parameters
-- Test routes
+**Phase 4 (Routing):** done
+- Implemented React Router with clean URLs and redirects
+- Routes tested in dev and production
 
-**Phase 5 (Testing):** 30 minutes
-- Test locally
-- Test on dev branch
-- Fix any issues
+**Phase 5 (Testing):** in progress
+- Local + dev testing
+- Leaderboard/auth/rules verified
+- UI polish and copy updates
 
 **Phase 6 (Deploy):** 10 minutes
 - Merge to main
 - Verify production
 
-**Total Time:** 2.5 - 3 hours
+**Total Time (to date):** ~3–4 hours
 
 ---
 
@@ -699,10 +708,10 @@ Implementation is complete when:
 
 - ✅ Week 1 quiz accessible at `/quiz/week-1-key-sovereignty`
 - ✅ Homepage redirects to current quiz
-- ✅ Leaderboard saves to quiz-specific path
+- ✅ Leaderboard saves to `/leaderboard/{quizId}/{uid}` (per-user) and shows Top 10
 - ✅ Can add new quiz by copying file
 - ✅ All routes work in production
-- ✅ No broken functionality from current version
+- ✅ First-score-only UX; duplicate display names blocked on Start
 - ✅ Team can follow instructions to add quizzes
 - ✅ Documentation is clear and complete
 
@@ -710,6 +719,6 @@ Implementation is complete when:
 
 **Document Version:** 1.0
 **Created:** 2025-01-12
-**Last Updated:** 2025-01-12
+**Last Updated:** 2025-10-13
 **Author:** Claude (AI Assistant)
 **Maintained By:** DigiCert Quiz Team
