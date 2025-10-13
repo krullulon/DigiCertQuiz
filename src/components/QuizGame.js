@@ -284,10 +284,10 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
                 <div className="flex items-center justify-between">
                   <span className="text-gray-800">{option}</span>
                   {showFeedback && index === question.correctAnswer && (
-                    <CheckCircle className="w-6 h-6 text-green-600" />
+                    <CheckCircle className="w-8 h-8 text-green-600 shrink-0" />
                   )}
                   {showFeedback && selectedAnswer === index && !isCorrect && (
-                    <XCircle className="w-6 h-6 text-red-600" />
+                    <XCircle className="w-8 h-8 text-red-600 shrink-0" />
                   )}
                 </div>
               </button>
