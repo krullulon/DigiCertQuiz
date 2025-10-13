@@ -8,6 +8,15 @@ const NAME_REGEX = /^[A-Za-z0-9 .,'_-]{2,30}$/;
 const TROPHY_COLORS = ["text-yellow-500", "text-gray-400", "text-orange-500"];
 const sanitizeName = (s) => s.trim().replace(/\s+/g, " ");
 
+const SCREEN_BACKGROUND_STYLE = {
+  backgroundImage:
+    'url("/images/quiz_background.png"), linear-gradient(to bottom right, #3b82f6, #9333ea)',
+  backgroundRepeat: "no-repeat, no-repeat",
+  backgroundAttachment: "fixed, fixed",
+  backgroundPosition: "top left, center",
+  backgroundSize: "auto, cover",
+};
+
 export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
   const [screen, setScreen] = useState("intro");
   const [playerName, setPlayerName] = useState("");
@@ -219,7 +228,10 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
 
   if (screen === "intro") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center p-4">
+      <div
+        className="min-h-screen flex items-center justify-center p-4"
+        style={SCREEN_BACKGROUND_STYLE}
+      >
         <div className="bg-white rounded-lg shadow-2xl p-8 max-w-2xl w-full">
           <div className="text-center mb-8">
             <img
@@ -317,7 +329,10 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
   if (screen === "question") {
     const question = questions[currentQuestion];
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center p-4">
+      <div
+        className="min-h-screen flex items-center justify-center p-4"
+        style={SCREEN_BACKGROUND_STYLE}
+      >
         <div className="bg-white rounded-lg shadow-2xl p-8 max-w-2xl w-full">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-2">
@@ -417,7 +432,10 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
         : null;
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center p-4">
+      <div
+        className="min-h-screen flex items-center justify-center p-4"
+        style={SCREEN_BACKGROUND_STYLE}
+      >
         <div className="bg-white rounded-lg shadow-2xl p-8 max-w-2xl w-full">
           {error && (
             <div className="mb-4 p-3 rounded bg-red-100 border border-red-300 text-red-800">
