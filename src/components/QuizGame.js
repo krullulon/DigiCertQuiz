@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { Clock, Trophy, CheckCircle, XCircle } from "lucide-react";
+import { Clock, CheckCircle, XCircle } from "lucide-react";
 
 // Firebase configuration (client keys are not secrets; rules must enforce security)
 const firebaseConfig = {
@@ -171,7 +171,11 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
       <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-2xl p-8 max-w-2xl w-full">
           <div className="text-center mb-8">
-            <Trophy className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
+            <img
+              src="/images/digicert-blue-logo-large.jpg"
+              alt="DigiCert"
+              className="h-16 mx-auto mb-4 object-contain"
+            />
             <h1 className="text-4xl font-bold text-gray-800 mb-2">{title}</h1>
             <p className="text-gray-600">Test your knowledge against the clock!</p>
           </div>
@@ -344,7 +348,11 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
       <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-2xl p-8 max-w-2xl w-full">
           <div className="text-center mb-8">
-            <Trophy className="w-20 h-20 text-yellow-500 mx-auto mb-4" />
+            <img
+              src="/images/digicert-blue-logo-large.jpg"
+              alt="DigiCert"
+              className="h-20 mx-auto mb-4 object-contain"
+            />
             <h1 className="text-4xl font-bold text-gray-800 mb-2">Quiz Complete!</h1>
             <p className="text-xl text-gray-600">
               {playerName}, your final score: <span className="font-bold text-blue-600">{totalScore + (isCorrect ? timeLeft : 0)}</span>
