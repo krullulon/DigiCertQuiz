@@ -717,6 +717,42 @@ Implementation is complete when:
 
 ---
 
+## Architecture Review – 2025-10-13
+
+### Summary
+- Confirmed routing flow delegates quiz selection via [`App.js`](src/App.js:6) with `BrowserRouter` instantiation handled in [`index.js`](src/index.js:3), maintaining clean `/quiz/:quizId` URLs.
+- Validated per-quiz Firebase writes rely on anonymous auth through [`getValidAuth`](src/services/firebaseAuth.js:65) and scoped paths in [`QuizGame.js`](src/components/QuizGame.js:80), aligning with documented security rules.
+- Observed quiz content separation via [`week-1-key-sovereignty.js`](src/quizzes/week-1-key-sovereignty.js:1), establishing the template for future quizzes.
+
+### Key Gaps & Risks
+1. **Authoring guide missing from repo**
+   The architecture plan references `src/quizzes/README.md`, but the file is absent. Non-technical contributors currently lack embedded instructions, increasing the risk of malformed quiz modules or skipped registrations.
+2. **Manual registry updates prone to omission**
+   Adding a quiz requires importing and exporting it inside [`quizzes/index.js`](src/quizzes/index.js:1). Without validation, a forgotten registry update yields a silent 404 (`Quiz not found`) in [`App.js`](src/App.js:10). Introducing a lightweight check (build-time test or lint rule) would surface the issue earlier.
+3. **404 view triggers full page reloads**
+   The fallback view in [`App.js`](src/App.js:17) uses an `<a>` tag. This forces a document reload instead of a client-side navigation, briefly resetting app state and analytics context. Replacing with `Link` keeps navigation inside the SPA.
+4. **Display-name uniqueness policy relies on unique employee names**
+   Start validation in [`QuizGame.js`](src/components/QuizGame.js:164) prohibits duplicate sanitized names. Because this quiz targets an internal employee audience where names are expected to be unique, the current guard is acceptable; note this assumption in contributor guidance so future audiences reassess if the participant pool changes.
+5. **Quiz data contract not fully documented**
+   `maxTime` is consumed in [`QuizGame.js`](src/components/QuizGame.js:67) and provided by Week 1 data, yet guidance for future quizzes (and optional fields like descriptions) is missing from repo docs. Contributors may omit required fields, altering scoring or UX unintentionally.
+
+### Recommended Next Steps
+- Restore or recreate `src/quizzes/README.md` with a copy-paste template, explicit field definitions (including `maxTime`), and screenshots/gifs for the non-technical workflow.
+- Add a safeguard (unit test or CI script) that fails when `quizzes/index.js` exports a quiz ID not backed by a module, and vice versa.
+- Update 404/redirect buttons to use `Link` components for seamless navigation and consistent SPA analytics.
+- Document the single-use display-name rule in the restored authoring guide so teams understand the unique-name expectation for internal audiences.
+- Extend the architecture plan with a lightweight checklist for launching new quizzes (auth rules verified, registry updated, manual smoke test run) to reduce operational risk.
+
+### Pre-Launch Checklist (Internal Teams)
+
+Before announcing a new quiz:
+
+1. Confirm the quiz file exports `id`, `title`, `maxTime`, and populated questions.
+2. Verify the quiz is registered in [`src/quizzes/index.js`](src/quizzes/index.js:1) and `currentQuizId` points to the intended release.
+3. Run `npm run test:quizzes` to ensure registry consistency and quiz schema integrity.
+4. Smoke test locally (`npm start`) by visiting `/quiz/{quiz-id}` to confirm routing, timer, and leaderboard submission.
+5. Push to `dev`, validate the Vercel preview URL, then merge to `main` once approved.
+
 **Document Version:** 1.0
 **Created:** 2025-01-12
 **Last Updated:** 2025-10-13
