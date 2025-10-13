@@ -258,10 +258,6 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
                 <span className="text-blue-600 mr-2">•</span>
                 <span>Only correct answers earn points</span>
               </li>
-              <li className="flex items-start">
-                <span className="text-blue-600 mr-2">•</span>
-                <span>Compete for the top spot on the leaderboard</span>
-              </li>
             </ul>
           </div>
 
