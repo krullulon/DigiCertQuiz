@@ -477,14 +477,12 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
             </div>
           </div>
 
-          {!alreadySubmitted && (
-            <button
-              onClick={handleRestart}
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-lg font-semibold text-lg hover:from-blue-700 hover:to-purple-700 transition-all"
-            >
-              Take Quiz Again
-            </button>
-          )}
+          <button
+            onClick={handleRestart}
+            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-lg font-semibold text-lg hover:from-blue-700 hover:to-purple-700 transition-all"
+          >
+            Return to Start
+          </button>
         </div>
       </div>
     );
