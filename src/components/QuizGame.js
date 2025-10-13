@@ -267,7 +267,7 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
 
           {leaderboard.length > 0 && (
             <div className="bg-yellow-50 rounded-lg p-4 mb-6">
-              <h3 className="font-semibold text-gray-800 mb-2">Current Top 3:</h3>
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">Current Top 3:</h3>
               <div className="space-y-1">
                 {leaderboard.slice(0, 3).map((entry, index) => (
                   <div
@@ -275,7 +275,7 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
                     className="grid grid-cols-3 items-center bg-white rounded-lg px-4 py-3 text-sm"
                     style={{ gridTemplateColumns: "1fr auto auto" }}
                   >
-                    <span className="text-gray-800 font-bold text-base md:text-lg">
+                    <span className="text-blue-600 font-bold text-base md:text-lg">
                       {index + 1}. {entry.name}
                     </span>
                     <span className="font-semibold text-blue-600 text-base md:text-lg pr-4 md:pr-6">
