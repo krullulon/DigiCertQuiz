@@ -53,10 +53,10 @@ DigiCertQuiz/
 │   │   ├── firebaseConfig.js           # Firebase config + DB URL
 │   │   └── firebaseAuth.js             # Anonymous Auth (sign-in/refresh)
 │   └── quizzes/
-│       ├── index.js                    # Quiz registry & current quiz config
-│       ├── week-1-key-sovereignty.js   # Week 1 quiz data
-│       ├── week-2-certificate-lifecycle.js  # Week 2 quiz data (example)
-│       └── README.md                   # Instructions for adding quizzes
+│       ├── index.js                    # Quiz registry & helper accessors
+│       ├── week-1-key-sovereignty.js   # Week 1 quiz data (currently live)
+│       ├── README.md                   # Authoring guide for new quizzes
+│       └── registry.test.js            # Automated registry/schema validation
 ├── public/
 │   └── images/digicert-blue-logo-large.jpg  # Branding asset
 ├── package.json                        # Dependencies (includes react-router-dom)
@@ -69,18 +69,18 @@ DigiCertQuiz/
 **Purpose:** Handle URL routing and load appropriate quiz
 
 **Responsibilities:**
-- Set up React Router
-- Define routes (`/`, `/quiz/:quizId`)
-- Load quiz data based on URL parameter
-- Handle 404 for invalid quiz IDs
-- Redirect homepage to current quiz (for now)
+- Define SPA routes (`/`, `/quiz/:quizId`) with React Router (BrowserRouter is created in `src/index.js`)
+- Resolve quiz data via the `getQuiz` helper
+- Render a Link-based not-found screen that keeps navigation client side
+- Redirect the homepage to the current quiz (for now)
 
 **Code Structure:**
 ```javascript
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate, useParams, Link } from 'react-router-dom';
 import QuizGame from './components/QuizGame';
-import { quizzes, currentQuizId } from './quizzes';
+import { getQuiz, currentQuizId } from './quizzes';
 
+// BrowserRouter is instantiated in src/index.js
 // Route /quiz/:quizId → loads that quiz
 // Route / → redirects to current quiz
 ```
@@ -89,17 +89,18 @@ import { quizzes, currentQuizId } from './quizzes';
 **Purpose:** Display quiz interface and handle game logic
 
 **Responsibilities:**
-- Render intro screen, questions, leaderboard
-- Handle timer, scoring, answer submission
-- Interact with Firebase (using quiz-specific paths)
-- All the logic currently in `App.js`
+- Render intro, question, and leaderboard screens for each quiz
+- Track timer-based scoring and enforce first-score-only submissions
+- Interact with Firebase using quiz-scoped leaderboard paths and anonymous auth
+- Enforce unique leaderboard display names per quiz to match employee audience expectations
 
 **Props:**
 ```javascript
 <QuizGame
   quizId="week-1-key-sovereignty"
-  quizTitle="Week 1: Key Sovereignty"
-  questions={[...]}
+  title="DigiCert Weekly Product Quiz #1"
+  questions={[/* ... */]}
+  maxTime={180}
 />
 ```
 
@@ -107,21 +108,24 @@ import { quizzes, currentQuizId } from './quizzes';
 **Purpose:** Central registry of all quizzes
 
 **Responsibilities:**
-- Import all quiz modules
-- Export quiz lookup object
-- Define which quiz is "current" for homepage
+- Import quiz modules as they are authored
+- Export a map of quizzes keyed by `id`
+- Provide a `getQuiz` helper for router lookups
+- Define which quiz is "current" for the homepage redirect
 
 **Code Structure:**
 ```javascript
 import week1 from './week-1-key-sovereignty';
-import week2 from './week-2-certificate-lifecycle';
 
 export const quizzes = {
-  'week-1-key-sovereignty': week1,
-  'week-2-certificate-lifecycle': week2,
+  [week1.id]: week1,
 };
 
-export const currentQuizId = 'week-2-certificate-lifecycle'; // Update weekly
+export const currentQuizId = week1.id;
+
+export function getQuiz(id) {
+  return quizzes[id];
+}
 ```
 
 #### `quizzes/week-1-key-sovereignty.js` (Quiz Data)
@@ -129,21 +133,21 @@ export const currentQuizId = 'week-2-certificate-lifecycle'; // Update weekly
 
 **Structure:**
 ```javascript
-export default {
+const quiz = {
   id: "week-1-key-sovereignty",
-  title: "Week 1: Key Sovereignty",
-  description: "Test your knowledge of key sovereignty and cryptographic control",
-  week: 1,
-  date: "2025-01-12",
+  title: "DigiCert Weekly Product Quiz #1",
+  maxTime: 180,
   questions: [
     {
       question: "What best defines key sovereignty?",
       options: ["...", "...", "...", "..."],
-      correctAnswer: 1
+      correctAnswer: 1,
     },
     // ... more questions
-  ]
+  ],
 };
+
+export default quiz;
 ```
 
 ---
@@ -160,6 +164,8 @@ digi-cert-quiz.vercel.app/quiz/week-2-certificate-lifecycle
 digi-cert-quiz.vercel.app/quiz/week-3-pki-fundamentals
 digi-cert-quiz.vercel.app/quiz/week-4-code-signing
 ```
+
+*Currently, only `week-1-key-sovereignty` is published; future quizzes will follow the same pattern.*
 
 **URL Pattern:** `/quiz/{quiz-id}`
 
@@ -257,7 +263,7 @@ mkdir src/quizzes
 
 **Step 2.1:** Create `components/QuizGame.js`
 - Copy all current quiz logic from `App.js`
-- Convert to accept props: `{ quizId, quizTitle, questions }`
+- Convert to accept props: `{ quizId, title, questions, maxTime }`
 - Update Firebase paths to include `quizId`
 - Export as default
 
@@ -268,7 +274,7 @@ mkdir src/quizzes
 ### Phase 3: Create Quiz Data Files (done)
 
 **Step 3.1:** Create `quizzes/week-1-key-sovereignty.js`
-- Export quiz object with id, title, description, questions
+- Export quiz object with id, title, maxTime, questions
 - Use your current 5 Key Sovereignty questions
 
 **Step 3.2:** Create `quizzes/index.js`
@@ -276,10 +282,9 @@ mkdir src/quizzes
 - Export `quizzes` object
 - Export `currentQuizId`
 
-**Step 3.3:** Create `quizzes/README.md`
-- Instructions for adding new quizzes
-- Template for quiz files
-- Guidelines for quiz IDs
+**Step 3.3:** Maintain `quizzes/README.md`
+- Keep authoring instructions, templates, and field definitions current for non-technical contributors
+- Document any new quiz metadata fields as they are introduced
 
 ### Phase 4: Implement Routing (done)
 
@@ -305,6 +310,7 @@ mkdir src/quizzes
 ```bash
 npm start
 ```
+Run `npm run test:quizzes` to ensure registry and schema validations pass before publishing.
 
 **Step 5.2:** Test scenarios
 - Navigate to `/quiz/week-1-key-sovereignty`
@@ -353,37 +359,46 @@ npm start
 Open your new file and update:
 
 ```javascript
-export default {
-  id: "week-2-certificate-lifecycle",  // ← Change this
-  title: "Week 2: Certificate Lifecycle",  // ← Change this
-  description: "Test your knowledge of certificate management",  // ← Change this
-  week: 2,  // ← Change this
-  date: "2025-01-19",  // ← Change this
+const quiz = {
+  id: "week-2-certificate-lifecycle",          // Must match file name slug
+  title: "DigiCert Weekly Product Quiz #2",     // Display title
+  maxTime: 180,                                 // Seconds per question (adjust if needed)
   questions: [
     {
-      question: "Your new question here?",  // ← Change these
-      options: ["Option 1", "Option 2", "Option 3", "Option 4"],
-      correctAnswer: 0  // ← 0 = first option, 1 = second, etc.
+      question: "Your question text?",          // Replace with quiz content
+      options: ["Answer A", "Answer B", "Answer C", "Answer D"],
+      correctAnswer: 1,                         // 0 = first option, 1 = second, etc.
     },
-    // Add 4-5 questions total
-  ]
+    // Add at least 4 total questions
+  ],
 };
+
+export default quiz;
 ```
 
 **Step 3: Register the Quiz**
 
-Open `src/quizzes/index.js` and add two lines:
+Open [`src/quizzes/index.js`](./index.js) and update the registry:
+
+- Add an import for your new module.
+- Add the quiz to the exported `quizzes` map.
+- Update `currentQuizId` if this is the newest quiz.
+- Ensure the `getQuiz` helper returns the new quiz.
 
 ```javascript
 import week1 from './week-1-key-sovereignty';
 import week2 from './week-2-certificate-lifecycle';  // ← Add this line
 
 export const quizzes = {
-  'week-1-key-sovereignty': week1,
-  'week-2-certificate-lifecycle': week2,  // ← Add this line
+  [week1.id]: week1,
+  [week2.id]: week2,  // ← Add this line
 };
 
-export const currentQuizId = 'week-2-certificate-lifecycle';  // ← Update this
+export const currentQuizId = week2.id;  // ← Update this
+
+export function getQuiz(id) {
+  return quizzes[id];
+}
 ```
 
 **Step 4: Commit and Deploy**
@@ -436,36 +451,40 @@ Share this link via email, Slack, etc.
 
 ```javascript
 // App.js
-import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
+import { Routes, Route, Navigate, useParams, Link } from 'react-router-dom';
 import QuizGame from './components/QuizGame';
-import { quizzes, currentQuizId } from './quizzes';
+import { getQuiz, currentQuizId } from './quizzes';
 
-function QuizRoute() {
+function QuizPage() {
   const { quizId } = useParams();
-  const quiz = quizzes[quizId];
+  const quiz = getQuiz(quizId);
 
   if (!quiz) {
     return (
       <div>
         <h1>Quiz Not Found</h1>
-        <p>The quiz "{quizId}" doesn't exist.</p>
-        <a href={`/quiz/${currentQuizId}`}>Go to current quiz</a>
+        <Link to={`/quiz/${currentQuizId}`}>Go to current quiz</Link>
       </div>
     );
   }
 
-  return <QuizGame {...quiz} />;
+  return (
+    <QuizGame
+      quizId={quiz.id}
+      title={quiz.title}
+      questions={quiz.questions}
+      maxTime={quiz.maxTime}
+    />
+  );
 }
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Navigate to={`/quiz/${currentQuizId}`} replace />} />
-        <Route path="/quiz/:quizId" element={<QuizRoute />} />
-        <Route path="*" element={<Navigate to={`/quiz/${currentQuizId}`} replace />} />
-      </Routes>
-    </BrowserRouter>
+    <Routes>
+      <Route path="/" element={<Navigate to={`/quiz/${currentQuizId}`} replace />} />
+      <Route path="/quiz/:quizId" element={<QuizPage />} />
+      <Route path="*" element={<Navigate to={`/quiz/${currentQuizId}`} replace />} />
+    </Routes>
   );
 }
 ```
@@ -474,25 +493,26 @@ export default function App() {
 
 ```javascript
 // components/QuizGame.js
-export default function QuizGame({ id, title, description, questions }) {
-  // All existing quiz logic
-  // Update Firebase paths to use `id`
-
-  const DB_URL = firebaseConfig.databaseURL;
+export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
+  const loadLeaderboard = useCallback(async () => {
+    const response = await fetch(`${DB_URL}/leaderboard/${quizId}.json?t=${Date.now()}`, {
+      cache: "no-store",
+    });
+    // ...
+  }, [quizId]);
 
   const saveScore = async (name, score) => {
-    await fetch(`${DB_URL}/leaderboard/${id}.json`, {  // ← Use quiz id
-      method: "POST",
-      body: JSON.stringify({ name, score, timestamp: Date.now() })
+    const { idToken, uid } = await getValidAuth();
+    const safeScore = Math.max(0, Math.min(score, maxTime * questions.length));
+
+    await fetch(`${DB_URL}/leaderboard/${quizId}/${uid}.json?auth=${encodeURIComponent(idToken)}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, score: safeScore, timestamp: { ".sv": "timestamp" } }),
     });
   };
 
-  const loadLeaderboard = async () => {
-    const response = await fetch(`${DB_URL}/leaderboard/${id}.json`);  // ← Use quiz id
-    // ...
-  };
-
-  // Rest of component unchanged
+  // Prevent duplicate submissions by checking localStorage and existing leaderboard entries.
 }
 ```
 
@@ -725,23 +745,17 @@ Implementation is complete when:
 - Observed quiz content separation via [`week-1-key-sovereignty.js`](src/quizzes/week-1-key-sovereignty.js:1), establishing the template for future quizzes.
 
 ### Key Gaps & Risks
-1. **Authoring guide missing from repo**
-   The architecture plan references `src/quizzes/README.md`, but the file is absent. Non-technical contributors currently lack embedded instructions, increasing the risk of malformed quiz modules or skipped registrations.
-2. **Manual registry updates prone to omission**
-   Adding a quiz requires importing and exporting it inside [`quizzes/index.js`](src/quizzes/index.js:1). Without validation, a forgotten registry update yields a silent 404 (`Quiz not found`) in [`App.js`](src/App.js:10). Introducing a lightweight check (build-time test or lint rule) would surface the issue earlier.
-3. **404 view triggers full page reloads**
-   The fallback view in [`App.js`](src/App.js:17) uses an `<a>` tag. This forces a document reload instead of a client-side navigation, briefly resetting app state and analytics context. Replacing with `Link` keeps navigation inside the SPA.
-4. **Display-name uniqueness policy relies on unique employee names**
-   Start validation in [`QuizGame.js`](src/components/QuizGame.js:164) prohibits duplicate sanitized names. Because this quiz targets an internal employee audience where names are expected to be unique, the current guard is acceptable; note this assumption in contributor guidance so future audiences reassess if the participant pool changes.
-5. **Quiz data contract not fully documented**
-   `maxTime` is consumed in [`QuizGame.js`](src/components/QuizGame.js:67) and provided by Week 1 data, yet guidance for future quizzes (and optional fields like descriptions) is missing from repo docs. Contributors may omit required fields, altering scoring or UX unintentionally.
+1. **Display-name uniqueness policy depends on an internal audience**
+   Start validation in [`QuizGame.js`](src/components/QuizGame.js:164) still blocks duplicate sanitized names. The policy is documented in [`src/quizzes/README.md`](src/quizzes/README.md:103), but teams should revisit it if quizzes expand to external participants.
+2. **Registry integrity relies on `npm run test:quizzes` staying in the workflow**
+   [`registry.test.js`](src/quizzes/registry.test.js:1) guards against missing registrations, so ensure CI and release checklists run it before publishing new content.
+3. **Future quiz metadata must be documented before use**
+   If fields such as `description`, `week`, or `date` are reintroduced, update both the authoring guide and the validation test so contributors understand the required contract.
 
 ### Recommended Next Steps
-- Restore or recreate `src/quizzes/README.md` with a copy-paste template, explicit field definitions (including `maxTime`), and screenshots/gifs for the non-technical workflow.
-- Add a safeguard (unit test or CI script) that fails when `quizzes/index.js` exports a quiz ID not backed by a module, and vice versa.
-- Update 404/redirect buttons to use `Link` components for seamless navigation and consistent SPA analytics.
-- Document the single-use display-name rule in the restored authoring guide so teams understand the unique-name expectation for internal audiences.
-- Extend the architecture plan with a lightweight checklist for launching new quizzes (auth rules verified, registry updated, manual smoke test run) to reduce operational risk.
+- Keep [`src/quizzes/README.md`](src/quizzes/README.md:1) aligned with any new quiz metadata or policy changes.
+- Integrate `npm run test:quizzes` into CI so registry mismatches are caught automatically.
+- Re-evaluate the display-name policy when expanding beyond DigiCert employees and adjust [`QuizGame.js`](src/components/QuizGame.js:164) plus contributor docs accordingly.
 
 ### Pre-Launch Checklist (Internal Teams)
 
@@ -753,8 +767,8 @@ Before announcing a new quiz:
 4. Smoke test locally (`npm start`) by visiting `/quiz/{quiz-id}` to confirm routing, timer, and leaderboard submission.
 5. Push to `dev`, validate the Vercel preview URL, then merge to `main` once approved.
 
-**Document Version:** 1.0
+**Document Version:** 1.1
 **Created:** 2025-01-12
-**Last Updated:** 2025-10-13
+**Last Updated:** 2025-10-14
 **Author:** Claude (AI Assistant)
 **Maintained By:** DigiCert Quiz Team
