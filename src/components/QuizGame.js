@@ -260,7 +260,7 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
             </div>
           )}
 
-          <div className="bg-blue-50 rounded-lg p-6 mb-6">
+          <div className="bg-blue-50 rounded-lg p-6 mb-6 shadow-lg">
             <div className="md:flex md:items-center">
               <div className="md:flex-1 md:pr-6">
                 <h2 className="text-xl font-semibold text-gray-800 mb-3">How It Works:</h2>
@@ -474,7 +474,7 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
             )}
           </div>
 
-          <div className="bg-gradient-to-r from-yellow-50 to-yellow-100 rounded-lg p-6 mb-6">
+          <div className="bg-gradient-to-r from-yellow-50 to-yellow-100 rounded-lg p-6 mb-6 shadow-lg">
             <div className="flex items-center justify-between mb-4">
               <h2
                 className="text-2xl font-bold"
