@@ -261,21 +261,32 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
           )}
 
           <div className="bg-blue-50 rounded-lg p-6 mb-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-3">How It Works:</h2>
-            <ul className="space-y-2 text-gray-700">
-              <li className="flex items-start">
-                <span className="text-blue-600 mr-2">•</span>
-                <span>Each question starts with {maxTime} points</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-blue-600 mr-2">•</span>
-                <span>You lose 1 point per second, so answer quickly!</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-blue-600 mr-2">•</span>
-                <span>Only correct answers earn points</span>
-              </li>
-            </ul>
+            <div className="md:flex md:items-center">
+              <div className="md:flex-1 md:pr-6">
+                <h2 className="text-xl font-semibold text-gray-800 mb-3">How It Works:</h2>
+                <ul className="space-y-2 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-blue-600 mr-2">•</span>
+                    <span>Each question starts with {maxTime} points</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-blue-600 mr-2">•</span>
+                    <span>You lose 1 point per second, so answer quickly!</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-blue-600 mr-2">•</span>
+                    <span>Only correct answers earn points</span>
+                  </li>
+                </ul>
+              </div>
+              <div className="mt-6 md:mt-0 md:pl-6 flex justify-center md:justify-end">
+                <img
+                  src="/images/quiz_icon.png"
+                  alt="Quiz icon"
+                  className="w-24 h-24 object-contain"
+                />
+              </div>
+            </div>
           </div>
 
           {leaderboard.length > 0 && (
