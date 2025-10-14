@@ -279,7 +279,7 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
                   </li>
                 </ul>
               </div>
-              <div className="mt-6 md:mt-0 md:pl-6 flex justify-center md:justify-end">
+              <div className="hidden lg:flex lg:pl-6 justify-end">
                 <img
                   src="/images/quiz_icon.png"
                   alt="Quiz icon"
