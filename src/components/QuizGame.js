@@ -239,7 +239,12 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
               alt="DigiCert"
               className="h-16 mx-auto mb-4 object-contain"
             />
-            <h1 className="text-4xl font-bold text-gray-800 mb-2">{title}</h1>
+            <h1
+              className="text-4xl font-bold mb-2"
+              style={{ color: "#0e75ba" }}
+            >
+              {title}
+            </h1>
             <p className="text-gray-600">This week's quiz focuses on <b>key sovereignty</b></p>
           </div>
 
