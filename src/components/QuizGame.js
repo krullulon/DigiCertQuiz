@@ -319,7 +319,7 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
               type="text"
               value={playerName}
               onChange={(e) => setPlayerName(e.target.value)}
-              placeholder="Enter your name"
+              placeholder="Enter your name to start"
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               disabled={alreadySubmitted}
             />
