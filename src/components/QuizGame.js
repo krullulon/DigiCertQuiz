@@ -383,8 +383,8 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
                     : ""
                 }`}
               >
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-800">{option}</span>
+                <div className="flex items-center justify-center gap-3 text-center">
+                  <span className="text-gray-800 text-center">{option}</span>
                   {showFeedback && index === question.correctAnswer && (
                     <CheckCircle className="w-8 h-8 text-green-600 shrink-0" />
                   )}
