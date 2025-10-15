@@ -466,7 +466,7 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
             />
             {finalScoreValue != null && playerName && (
               <>
-                <h1 className="text-4xl font-bold" style={{ color: "#0e75ba" }}>Quiz Complete!</h1>
+                <h1 className="text-4xl font-bold mb-4" style={{ color: "#0e75ba" }}>Quiz Complete!</h1>
                 <p className="text-xl text-gray-600">
                   {playerName}, your final score: <span className="font-bold text-blue-600">{finalScoreValue}</span>
                 </p>
