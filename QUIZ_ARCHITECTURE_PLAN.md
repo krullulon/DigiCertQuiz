@@ -100,7 +100,7 @@ import { getQuiz, currentQuizId } from './quizzes';
   quizId="week-1-key-sovereignty"
   title="DigiCert Weekly Product Quiz #1"
   questions={[/* ... */]}
-  maxTime={180}
+  maxTime={100}
 />
 ```
 
@@ -136,7 +136,7 @@ export function getQuiz(id) {
 const quiz = {
   id: "week-1-key-sovereignty",
   title: "DigiCert Weekly Product Quiz #1",
-  maxTime: 180,
+  maxTime: 100,
   questions: [
     {
       question: "What best defines key sovereignty?",
@@ -362,7 +362,7 @@ Open your new file and update:
 const quiz = {
   id: "week-2-certificate-lifecycle",          // Must match file name slug
   title: "DigiCert Weekly Product Quiz #2",     // Display title
-  maxTime: 180,                                 // Seconds per question (adjust if needed)
+  maxTime: 100,                                 // Seconds per question (adjust if needed)
   questions: [
     {
       question: "Your question text?",          // Replace with quiz content
@@ -493,7 +493,7 @@ export default function App() {
 
 ```javascript
 // components/QuizGame.js
-export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
+export default function QuizGame({ quizId, title, questions, maxTime = 100 }) {
   const loadLeaderboard = useCallback(async () => {
     const response = await fetch(`${DB_URL}/leaderboard/${quizId}.json?t=${Date.now()}`, {
       cache: "no-store",

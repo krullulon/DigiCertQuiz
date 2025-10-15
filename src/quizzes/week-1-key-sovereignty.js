@@ -1,7 +1,7 @@
 const quiz = {
   id: "week-1-key-sovereignty",
   title: "DigiCert Weekly Product Quiz #1",
-  maxTime: 180,
+  maxTime: 100,
   questions: [
     {
       question: "What best defines key sovereignty?",
