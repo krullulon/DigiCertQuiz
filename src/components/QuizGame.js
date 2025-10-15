@@ -291,7 +291,7 @@ export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
 
           {leaderboard.length > 0 && (
             <div className="bg-yellow-50 rounded-lg p-4 mb-6">
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">High Scores:</h3>
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">This Week's High Scores:</h3>
               <div className="space-y-1">
                 {leaderboard.slice(0, 3).map((entry, index) => (
                   <div
