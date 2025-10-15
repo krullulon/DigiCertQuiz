@@ -17,7 +17,7 @@ const SCREEN_BACKGROUND_STYLE = {
   backgroundSize: "auto, cover",
 };
 
-export default function QuizGame({ quizId, title, questions, maxTime = 180 }) {
+export default function QuizGame({ quizId, title, questions, maxTime = 100 }) {
   const [screen, setScreen] = useState("intro");
   const [playerName, setPlayerName] = useState("");
   const [currentQuestion, setCurrentQuestion] = useState(0);
