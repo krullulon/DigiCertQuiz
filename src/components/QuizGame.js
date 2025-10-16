@@ -36,7 +36,8 @@ export default function QuizGame({ quizId, title, questions, maxTime = 100 }) {
   const loadLeaderboard = useCallback(async () => {
     try {
       setLoading(true);
-      const url = `${DB_URL}/leaderboard/${quizId}.json?t=${Date.now()}`;
+      const { idToken } = await getValidAuth();
+      const url = `${DB_URL}/leaderboard/${quizId}.json?auth=${encodeURIComponent(idToken)}&t=${Date.now()}`;
       const response = await fetch(url, {
         cache: "no-store",
       });
@@ -140,9 +141,9 @@ export default function QuizGame({ quizId, title, questions, maxTime = 100 }) {
     let cancelled = false;
     (async () => {
       try {
-        const { uid } = await getValidAuth();
+        const { uid, idToken } = await getValidAuth();
         if (cancelled) return;
-        const res = await fetch(`${DB_URL}/leaderboard/${quizId}/${uid}.json`, {
+        const res = await fetch(`${DB_URL}/leaderboard/${quizId}/${uid}.json?auth=${encodeURIComponent(idToken)}`, {
           cache: "no-store",
         });
         if (!cancelled && res.ok) {
