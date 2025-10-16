@@ -194,6 +194,23 @@ export default function QuizGame({ quizId, title, questions, maxTime = 100 }) {
     setShowFeedback(true);
     if (correct) {
       setTotalScore((prev) => prev + timeLeft);
+      // Fire a celebratory confetti burst when the user is correct
+      try {
+        if (typeof window !== "undefined" && window.confetti) {
+          const fire = (ratio, opts = {}) =>
+            window.confetti({
+              particleCount: Math.floor(160 * ratio),
+              origin: { y: 0.65 },
+              ...opts,
+            });
+
+          fire(0.25, { spread: 26, startVelocity: 55 });
+          fire(0.2, { spread: 60 });
+          fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+          fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+          fire(0.1, { spread: 120, startVelocity: 45 });
+        }
+      } catch (_) {}
     }
   };
 
