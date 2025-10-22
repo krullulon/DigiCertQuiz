@@ -295,7 +295,7 @@ export default function QuizGame({ quizId, title, questions, maxTime = 100, intr
                   </li>
                   <li className="flex items-start">
                     <span className="text-blue-600 mr-2">•</span>
-                    <span>Please model our DigiCert values and only play each week's quiz once!</span>
+                    <span>No replays, please! Only your first score counts.</span>
                   </li>
                 </ul>
               </div>
