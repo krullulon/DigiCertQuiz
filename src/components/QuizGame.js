@@ -17,7 +17,7 @@ const SCREEN_BACKGROUND_STYLE = {
   backgroundSize: "auto, cover",
 };
 
-export default function QuizGame({ quizId, title, questions, maxTime = 100 }) {
+export default function QuizGame({ quizId, title, questions, maxTime = 100, intro }) {
   const [screen, setScreen] = useState("intro");
   const [playerName, setPlayerName] = useState("");
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -263,7 +263,9 @@ export default function QuizGame({ quizId, title, questions, maxTime = 100 }) {
             >
               {title}
             </h1>
-            <p className="text-gray-600">This week's quiz focuses on <b>key sovereignty</b></p>
+            {intro ? (
+              <p className="text-gray-600">{intro}</p>
+            ) : null}
           </div>
 
           {error && (

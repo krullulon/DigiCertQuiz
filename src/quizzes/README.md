@@ -28,6 +28,7 @@ Replace the placeholder fields in your new file:
 const quiz = {
   id: "week-2-certificate-lifecycle",          // Must match file name slug
   title: "DigiCert Weekly Product Quiz #2",     // Display title
+  intro: "This week's quiz focuses on ...",     // Optional: intro copy shown on the start screen
   maxTime: 100,                                 // Seconds per question (default 100)
   questions: [
     {
@@ -48,6 +49,7 @@ export default quiz;
 | --- | --- | --- |
 | `id` | string | Unique, lowercase, hyphenated slug (`week-3-pki-fundamentals`). Must stay in sync with file name and registry entry. |
 | `title` | string | Appears on the intro and leaderboard screens. |
+| `intro` | string (optional) | Short description of the week’s theme; shown on the intro screen. |
 | `maxTime` | number | Countdown (seconds) per question. Leave at 100 unless a different pace is desired. |
 | `questions` | array | Each entry needs `question` (string), `options` (array of 4), and `correctAnswer` (0–3). |
 

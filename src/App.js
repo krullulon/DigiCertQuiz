@@ -30,6 +30,7 @@ function QuizPage() {
       title={quiz.title}
       questions={quiz.questions}
       maxTime={quiz.maxTime}
+      intro={quiz.intro}
     />
   );
 }
@@ -59,4 +60,3 @@ export default function App() {
     </Routes>
   );
 }
-

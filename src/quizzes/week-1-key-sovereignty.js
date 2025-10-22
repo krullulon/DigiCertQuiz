@@ -1,6 +1,7 @@
 const quiz = {
   id: "week-1-key-sovereignty",
   title: "DigiCert Weekly Product Quiz #1",
+  intro: "This week's quiz focuses on key sovereignty.",
   maxTime: 100,
   questions: [
     {
@@ -59,4 +60,3 @@ const quiz = {
 };
 
 export default quiz;
-
