@@ -1,7 +1,7 @@
 const quiz = {
   id: "week-2-x9-extended-key-usage",
   title: "DigiCert Weekly Product Quiz #2",
-  intro: "This week's quiz focuses on Extended Key Usage (EKU) and Chrome clientAuth changes.",
+  intro: "This week's focus: Extended Key Usage (EKU) and Chrome clientAuth changes",
   maxTime: 100,
   questions: [
     {
