@@ -354,7 +354,7 @@ export default function QuizGame({ quizId, title, questions, maxTime = 100, intr
               onClick={() => { setFinalScoreValue(null); setScreen("leaderboard"); }}
               className="w-full border-2 border-blue-600 text-blue-700 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-all"
             >
-              View the leaderboard top 10
+              View the leaderboard top 25
             </button>
           </div>
         </div>
@@ -518,7 +518,7 @@ export default function QuizGame({ quizId, title, questions, maxTime = 100, intr
               ) : leaderboard.length === 0 ? (
                 <p className="text-center text-gray-600">Be the first to play!</p>
               ) : (
-                leaderboard.slice(0, 10).map((entry, index) => (
+                leaderboard.slice(0, 25).map((entry, index) => (
                   <div
                     key={index}
                     className={`flex items-center justify-between p-4 rounded-lg ${

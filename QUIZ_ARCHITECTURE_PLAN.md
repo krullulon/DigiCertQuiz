@@ -7,7 +7,7 @@ The refactor and security hardening are live. Highlights:
 - Quiz UI extracted to `src/components/QuizGame.js`; Week 1 data in `src/quizzes/week-1-key-sovereignty.js`
 - Per‑quiz, per‑user leaderboard under `leaderboard/{quizId}/{uid}` with Anonymous Auth
 - Rules validate name/score/timestamp; updates allowed only if higher
-- First‑score‑only UX; intro shows Top 3; leaderboard shows Top 10
+- First‑score‑only UX; intro shows Top 3; leaderboard shows Top 25
 - DigiCert branding added; icon sizes improved; final score display corrected
 
 ## Overview
@@ -17,7 +17,7 @@ The refactor and security hardening are live. Highlights:
 - Quiz logic in `src/components/QuizGame.js`; Week 1 data file present
 - Clean URLs (example): `/quiz/week-1-key-sovereignty`; root redirects to current quiz
 - Leaderboard per quiz at `/leaderboard/{quizId}/{uid}` (Anonymous Auth for writes)
-- Intro shows Top 3; dedicated leaderboard view shows Top 10
+- Intro shows Top 3; dedicated leaderboard view shows Top 25
 
 ### Goal (Multiple Quizzes)
 - Multiple quizzes, one per week
@@ -728,7 +728,7 @@ Implementation is complete when:
 
 - ✅ Week 1 quiz accessible at `/quiz/week-1-key-sovereignty`
 - ✅ Homepage redirects to current quiz
-- ✅ Leaderboard saves to `/leaderboard/{quizId}/{uid}` (per-user) and shows Top 10
+- ✅ Leaderboard saves to `/leaderboard/{quizId}/{uid}` (per-user) and shows Top 25
 - ✅ Can add new quiz by copying file
 - ✅ All routes work in production
 - ✅ First-score-only UX; duplicate display names blocked on Start
