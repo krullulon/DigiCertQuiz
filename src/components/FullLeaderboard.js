@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { DB_URL } from "../services/firebaseConfig";
 import { getValidAuth } from "../services/firebaseAuth";
 import { currentQuizId, getQuiz } from "../quizzes";
+import { Trophy } from "lucide-react";
 
 const SCREEN_BACKGROUND_STYLE = {
   backgroundImage:
@@ -56,6 +57,8 @@ export default function FullLeaderboard() {
     top30.slice(10, 20),
     top30.slice(20, 30),
   ], [top30]);
+
+  const TROPHY_COLORS = ["text-yellow-500", "text-gray-400", "text-orange-500"];
 
   const today = useMemo(() => {
     try {
@@ -126,7 +129,15 @@ export default function FullLeaderboard() {
                           {entry.name}
                         </span>
                       </div>
-                      <span className="font-bold text-blue-600 ml-2">{entry.score}</span>
+                      <div className="flex items-center gap-2 ml-2">
+                        {rank <= 3 ? (
+                          <Trophy
+                            className={`w-5 h-5 ${TROPHY_COLORS[rank - 1]}`}
+                            aria-hidden="true"
+                          />
+                        ) : null}
+                        <span className="font-bold text-blue-600">{entry.score}</span>
+                      </div>
                     </div>
                   );
                 })}
@@ -138,4 +149,3 @@ export default function FullLeaderboard() {
     </div>
   );
 }
-
