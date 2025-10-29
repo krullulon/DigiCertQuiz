@@ -72,6 +72,12 @@ export default function FullLeaderboard() {
     }
   }, []);
 
+  // Strip the repetitive preface from quiz intros like: "This week's focus: ..."
+  const sanitizedIntro = useMemo(() => {
+    const raw = quiz?.intro || "";
+    return raw.replace(/^\s*This\s+week['’]s\s+focus:\s*/i, "").trim();
+  }, [quiz]);
+
   return (
     <div className="min-h-screen overflow-hidden p-6" style={SCREEN_BACKGROUND_STYLE}>
       <div className="mx-auto w-full max-w-6xl bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl p-8">
@@ -86,12 +92,11 @@ export default function FullLeaderboard() {
               <h1 className="text-2xl font-bold truncate" style={{ color: "#0e75ba" }}>
                 {quiz?.title || "Quiz Leaderboard"}
               </h1>
-              <p className="text-gray-600 text-sm truncate">
+              <p className="text-gray-600 text-sm">
                 Last refreshed: {today}
-                {quiz?.intro ? (
+                {sanitizedIntro ? (
                   <>
-                    {" "}
-                    • {quiz.intro}
+                    {" "}• {sanitizedIntro}
                   </>
                 ) : null}
               </p>
