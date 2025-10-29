@@ -86,7 +86,15 @@ export default function FullLeaderboard() {
               <h1 className="text-2xl font-bold truncate" style={{ color: "#0e75ba" }}>
                 {quiz?.title || "Quiz Leaderboard"}
               </h1>
-              <p className="text-gray-600 text-sm">Last refreshed: {today}</p>
+              <p className="text-gray-600 text-sm truncate">
+                Last refreshed: {today}
+                {quiz?.intro ? (
+                  <>
+                    {" "}
+                    • {quiz.intro}
+                  </>
+                ) : null}
+              </p>
             </div>
           </div>
           <div className="text-right">
