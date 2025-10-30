@@ -10,6 +10,15 @@ The refactor and security hardening are live. Highlights:
 - First‑score‑only UX; intro shows Top 3; leaderboard shows Top 25
 - DigiCert branding added; icon sizes improved; final score display corrected
 
+New (Implemented): Screenshot Leaderboard view
+- Standalone full leaderboard screen for email-ready screenshots
+- Shows Top 30 in a 10/10/10 three-column layout (desktop 1920×1080)
+- Routes: `/leaderboard/full` (current quiz) and `/leaderboard/full/:quizId`
+- Header includes quiz title and "Last refreshed: <date>"
+- Appends sanitized tagline (removes leading "This week’s focus:") after a bullet
+- Trophies for ranks 1–3 rendered to the left of the score
+- No breakpoints/responsiveness; designed to fit above the fold; not linked from quiz flow
+
 ## Overview
 
 ### Current State (Post‑Refactor)
@@ -17,7 +26,7 @@ The refactor and security hardening are live. Highlights:
 - Quiz logic in `src/components/QuizGame.js`; Week 1 data file present
 - Clean URLs (example): `/quiz/week-1-key-sovereignty`; root redirects to current quiz
 - Leaderboard per quiz at `/leaderboard/{quizId}/{uid}` (Anonymous Auth for writes)
-- Intro shows Top 3; dedicated leaderboard view shows Top 25
+ - Intro shows Top 3; in-quiz leaderboard view shows Top 25; standalone screenshot leaderboard shows Top 30
 
 ### Goal (Multiple Quizzes)
 - Multiple quizzes, one per week
@@ -49,6 +58,7 @@ DigiCertQuiz/
 │   ├── styles.css                      # Global styles (unchanged)
 │   ├── components/
 │   │   └── QuizGame.js                 # Quiz UI component
+│   │   └── FullLeaderboard.js          # Screenshot view: Top 30 (10/10/10)
 │   ├── services/
 │   │   ├── firebaseConfig.js           # Firebase config + DB URL
 │   │   └── firebaseAuth.js             # Anonymous Auth (sign-in/refresh)
@@ -70,6 +80,7 @@ DigiCertQuiz/
 
 **Responsibilities:**
 - Define SPA routes (`/`, `/quiz/:quizId`) with React Router (BrowserRouter is created in `src/index.js`)
+- Add screenshot leaderboard routes: `/leaderboard/full` and `/leaderboard/full/:quizId`
 - Resolve quiz data via the `getQuiz` helper
 - Render a Link-based not-found screen that keeps navigation client side
 - Redirect the homepage to the current quiz (for now)
@@ -93,6 +104,7 @@ import { getQuiz, currentQuizId } from './quizzes';
 - Track timer-based scoring and enforce first-score-only submissions
 - Interact with Firebase using quiz-scoped leaderboard paths and anonymous auth
 - Enforce unique leaderboard display names per quiz to match employee audience expectations
+- In-quiz Leaderboard displays Top 25
 
 **Props:**
 ```javascript
@@ -196,6 +208,21 @@ digi-cert-quiz.vercel.app/quiz/invalid-quiz-id
 
 **Behavior:** Show 404 or "Quiz not found" message, link to current quiz
 
+### Screenshot Leaderboard URLs
+
+Standalone, desktop-only view for email screenshots:
+
+```
+/leaderboard/full                 # current quiz
+/leaderboard/full/:quizId         # specific quiz
+```
+
+Notes:
+- Renders Top 30 across three columns (10/10/10)
+- Header: Title + "Last refreshed: <date>" + sanitized tagline (intro without leading "This week’s focus:")
+- Trophies for ranks 1–3 shown left of score
+- Not linked from quiz; direct navigation only
+
 ---
 
 ## Firebase Leaderboard Strategy
@@ -241,6 +268,10 @@ entries.sort((a,b) => (b.score - a.score) || (b.timestamp - a.timestamp));
 - ✅ Safe updates (only if higher)
 - ✅ Server timestamps; resistant to client clock skew
 - ✅ Clear partitioning per quiz
+
+### Screenshot Leaderboard Consumption
+- Reads the same per-quiz collection and applies the existing sort: score desc, then timestamp desc
+- Displays Top 30 instead of Top 25 and uses a fixed, compact layout suitable for 1920×1080
 
 ---
 
@@ -483,6 +514,8 @@ export default function App() {
     <Routes>
       <Route path="/" element={<Navigate to={`/quiz/${currentQuizId}`} replace />} />
       <Route path="/quiz/:quizId" element={<QuizPage />} />
+      <Route path="/leaderboard/full" element={<FullLeaderboard />} />
+      <Route path="/leaderboard/full/:quizId" element={<FullLeaderboard />} />
       <Route path="*" element={<Navigate to={`/quiz/${currentQuizId}`} replace />} />
     </Routes>
   );
@@ -729,6 +762,7 @@ Implementation is complete when:
 - ✅ Week 1 quiz accessible at `/quiz/week-1-key-sovereignty`
 - ✅ Homepage redirects to current quiz
 - ✅ Leaderboard saves to `/leaderboard/{quizId}/{uid}` (per-user) and shows Top 25
+- ✅ Screenshot leaderboard accessible at `/leaderboard/full` and shows Top 30 in a 3-column layout
 - ✅ Can add new quiz by copying file
 - ✅ All routes work in production
 - ✅ First-score-only UX; duplicate display names blocked on Start
@@ -743,6 +777,7 @@ Implementation is complete when:
 - Confirmed routing flow delegates quiz selection via [`App.js`](src/App.js:6) with `BrowserRouter` instantiation handled in [`index.js`](src/index.js:3), maintaining clean `/quiz/:quizId` URLs.
 - Validated per-quiz Firebase writes rely on anonymous auth through [`getValidAuth`](src/services/firebaseAuth.js:65) and scoped paths in [`QuizGame.js`](src/components/QuizGame.js:80), aligning with documented security rules.
 - Observed quiz content separation via [`week-1-key-sovereignty.js`](src/quizzes/week-1-key-sovereignty.js:1), establishing the template for future quizzes.
+ - Added standalone screenshot leaderboard via [`FullLeaderboard.js`](src/components/FullLeaderboard.js:1) and routes (`/leaderboard/full`, `/leaderboard/full/:quizId`). Header shows title, "Last refreshed: <date>", and sanitized tagline; trophies for ranks 1–3.
 
 ### Key Gaps & Risks
 1. **Display-name uniqueness policy depends on an internal audience**
@@ -769,6 +804,6 @@ Before announcing a new quiz:
 
 **Document Version:** 1.1
 **Created:** 2025-01-12
-**Last Updated:** 2025-10-14
+**Last Updated:** 2025-10-29
 **Author:** Claude (AI Assistant)
 **Maintained By:** DigiCert Quiz Team
