@@ -5,7 +5,7 @@ import week3 from "./week-3-protocols";
 export const quizzes = {
   [week1.id]: week1,
   [week2.id]: week2,
-  [week2.id]: week3,
+  [week3.id]: week3,
 };
 
 export const currentQuizId = week3.id;
