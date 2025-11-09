@@ -92,6 +92,7 @@ This command ensures:
 1. `npm start` to launch the app.
 2. Navigate to `/quiz/{your-quiz-id}`.
 3. Confirm intro text, timer, question flow, and leaderboard submission.
+   - Note: Questions and their options are shuffled per session; the content is identical for all players.
 4. Verify that the new quiz is the default redirect if you updated `currentQuizId`.
 
 ### 6. Commit and Deploy

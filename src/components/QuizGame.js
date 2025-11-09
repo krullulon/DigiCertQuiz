@@ -31,6 +31,89 @@ export default function QuizGame({ quizId, title, questions, maxTime = 100 }) {
   const [error, setError] = useState("");
   const [alreadySubmitted, setAlreadySubmitted] = useState(false);
   const [finalScoreValue, setFinalScoreValue] = useState(null);
+  const [gameQuestions, setGameQuestions] = useState(null);
+
+  // Secure RNG and shuffle helpers (per-session order randomization)
+  function secureRandomInt(maxExclusive) {
+    if (typeof crypto !== "undefined" && crypto.getRandomValues) {
+      const maxUint32 = 0xffffffff;
+      const threshold = maxUint32 - (maxUint32 % maxExclusive);
+      let x;
+      do {
+        const buf = new Uint32Array(1);
+        crypto.getRandomValues(buf);
+        x = buf[0];
+      } while (x >= threshold);
+      return x % maxExclusive;
+    }
+    return Math.floor(Math.random() * maxExclusive);
+  }
+
+  function shuffleArray(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = secureRandomInt(i + 1);
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function shuffleQuestionsAndOptions(srcQuestions) {
+    const remapped = srcQuestions.map((q) => {
+      const indices = Array.from({ length: q.options.length }, (_, i) => i);
+      const shuffledIdx = shuffleArray(indices);
+      const newOptions = shuffledIdx.map((i) => q.options[i]);
+      const newCorrect = shuffledIdx.indexOf(q.correctAnswer);
+      return { ...q, options: newOptions, correctAnswer: newCorrect };
+    });
+    return shuffleArray(remapped);
+  }
+
+  function toNameSlug(s) {
+    const clean = sanitizeName(s).toLowerCase();
+    const collapsed = clean.replace(/\s+/g, " ");
+    const stripped = collapsed.replace(/[^a-z0-9 ]+/g, "");
+    return stripped.replace(/\s+/g, "-");
+  }
+
+  async function sha256Hex(input) {
+    const enc = new TextEncoder();
+    const data = enc.encode(input);
+    if (typeof crypto === "undefined" || !crypto.subtle) {
+      // Fallback non-crypto hash (should rarely run)
+      let h = 5381;
+      for (let i = 0; i < data.length; i++) h = ((h << 5) + h) + data[i];
+      return (h >>> 0).toString(16).padStart(8, "0");
+    }
+    const digest = await crypto.subtle.digest("SHA-256", data);
+    const bytes = new Uint8Array(digest);
+    return Array.from(bytes).map((b) => b.toString(16).padStart(2, "0")).join("");
+  }
+
+  async function getDeviceFingerprint(salt) {
+    try {
+      const nav = typeof navigator !== "undefined" ? navigator : {};
+      const scr = typeof screen !== "undefined" ? screen : {};
+      const tz = (Intl && Intl.DateTimeFormat && Intl.DateTimeFormat().resolvedOptions().timeZone) || "";
+      const parts = [
+        String(salt || ""),
+        String(nav.userAgent || ""),
+        String(nav.platform || ""),
+        String(nav.language || ""),
+        String(tz || ""),
+        String(scr.width || 0),
+        String(scr.height || 0),
+        String(scr.colorDepth || 0),
+        String(typeof devicePixelRatio !== "undefined" ? devicePixelRatio : 1),
+        String(nav.hardwareConcurrency || 0),
+        String(nav.deviceMemory || 0),
+        String("ontouchstart" in (typeof window !== "undefined" ? window : {})),
+      ];
+      return await sha256Hex(parts.join("|"));
+    } catch (_) {
+      return await sha256Hex(`fallback|${salt}|${Date.now()}`);
+    }
+  }
 
   // Load leaderboard for this quiz
   const loadLeaderboard = useCallback(async () => {
@@ -74,28 +157,50 @@ export default function QuizGame({ quizId, title, questions, maxTime = 100 }) {
         }
       } catch (_) {}
 
-      // Clamp score to a safe maximum
-      const maxPossible = maxTime * questions.length;
+      // Clamp score to a safe maximum (respect shuffled set length)
+      const activeQuestions = gameQuestions || questions;
+      const maxPossible = maxTime * activeQuestions.length;
       const safeScore = Math.max(0, Math.min(score, maxPossible));
 
       // Ensure authenticated uid and token for protected write
       const { idToken, uid } = await getValidAuth();
+      const fp = await getDeviceFingerprint(quizId);
+      const nameSlug = toNameSlug(name);
 
-      const newEntry = {
+      const updates = {};
+      updates[`leaderboard/${quizId}/${uid}`] = {
         name: name,
+        nameSlug,
         score: safeScore,
         // Use server timestamp to avoid client clock skew
         timestamp: { ".sv": "timestamp" },
+        fp,
       };
+      updates[`nameIndex/${quizId}/${nameSlug}`] = uid;
+      updates[`fingerprints/${quizId}/${fp}`] = uid;
 
-      const response = await fetch(
-        `${DB_URL}/leaderboard/${quizId}/${uid}.json?auth=${encodeURIComponent(idToken)}`,
+      let response = await fetch(
+        `${DB_URL}/.json?auth=${encodeURIComponent(idToken)}`,
         {
-          method: "PUT",
+          method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(newEntry),
+          body: JSON.stringify(updates),
         }
       );
+
+      if (!response.ok && (response.status === 401 || response.status === 403)) {
+        // Likely rules v1 without permissions for nameIndex/fingerprints.
+        // Fallback to single write to leaderboard path only.
+        const newEntry = updates[`leaderboard/${quizId}/${uid}`];
+        response = await fetch(
+          `${DB_URL}/leaderboard/${quizId}/${uid}.json?auth=${encodeURIComponent(idToken)}`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(newEntry),
+          }
+        );
+      }
 
       if (response.ok) {
         await loadLeaderboard();
@@ -182,6 +287,13 @@ export default function QuizGame({ quizId, title, questions, maxTime = 100 }) {
       );
       return;
     }
+    // Initialize per-session shuffled questions/options
+    try {
+      const shuffled = shuffleQuestionsAndOptions(questions);
+      setGameQuestions(shuffled);
+    } catch (_) {
+      setGameQuestions(questions.slice());
+    }
     setPlayerName(clean);
     setScreen("question");
     setTimeLeft(maxTime);
@@ -190,7 +302,8 @@ export default function QuizGame({ quizId, title, questions, maxTime = 100 }) {
 
   const handleSubmitAnswer = () => {
     if (selectedAnswer === null) return;
-    const correct = selectedAnswer === questions[currentQuestion].correctAnswer;
+    const activeQuestions = gameQuestions || questions;
+    const correct = selectedAnswer === activeQuestions[currentQuestion].correctAnswer;
     setIsCorrect(correct);
     setShowFeedback(true);
     if (correct) {
@@ -216,7 +329,8 @@ export default function QuizGame({ quizId, title, questions, maxTime = 100 }) {
   };
 
   const handleNextQuestion = async () => {
-    if (currentQuestion < questions.length - 1) {
+    const activeQuestions = gameQuestions || questions;
+    if (currentQuestion < activeQuestions.length - 1) {
       setCurrentQuestion((prev) => prev + 1);
       setTimeLeft(maxTime);
       setSelectedAnswer(null);
@@ -242,6 +356,7 @@ export default function QuizGame({ quizId, title, questions, maxTime = 100 }) {
     setTotalScore(0);
     setError("");
     setFinalScoreValue(null);
+    setGameQuestions(null);
   };
 
   if (screen === "intro") {
@@ -361,7 +476,8 @@ export default function QuizGame({ quizId, title, questions, maxTime = 100 }) {
   }
 
   if (screen === "question") {
-    const question = questions[currentQuestion];
+    const activeQuestions = gameQuestions || questions;
+    const question = activeQuestions[currentQuestion];
     return (
       <div
         className="min-h-screen flex items-center justify-center p-4"
@@ -378,7 +494,7 @@ export default function QuizGame({ quizId, title, questions, maxTime = 100 }) {
 
           <div className="mb-6">
             <div className="text-sm text-gray-600 mb-2">
-              Question {currentQuestion + 1} of {questions.length}
+              Question {currentQuestion + 1} of {activeQuestions.length}
             </div>
             <h2 className="text-2xl font-bold text-gray-800">{question.question}</h2>
           </div>
@@ -451,7 +567,7 @@ export default function QuizGame({ quizId, title, questions, maxTime = 100 }) {
               onClick={handleNextQuestion}
               className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-lg font-semibold text-lg hover:from-blue-700 hover:to-purple-700 transition-all"
             >
-              {currentQuestion < questions.length - 1 ? "Next Question" : "View Results"}
+              {currentQuestion < (gameQuestions ? gameQuestions.length : questions.length) - 1 ? "Next Question" : "View Results"}
             </button>
           )}
         </div>
