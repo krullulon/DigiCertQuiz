@@ -1,6 +1,7 @@
 import React from "react";
 import { Routes, Route, Navigate, useParams, Link } from "react-router-dom";
 import QuizGame from "./components/QuizGame";
+import FullLeaderboard from "./components/FullLeaderboard";
 import { getQuiz, currentQuizId } from "./quizzes";
 
 function QuizPage() {
@@ -30,6 +31,7 @@ function QuizPage() {
       title={quiz.title}
       questions={quiz.questions}
       maxTime={quiz.maxTime}
+      intro={quiz.intro}
     />
   );
 }
@@ -55,8 +57,9 @@ export default function App() {
     <Routes>
       <Route path="/" element={<Navigate to={`/quiz/${currentQuizId}`} replace />} />
       <Route path="/quiz/:quizId" element={<QuizPage />} />
+      <Route path="/leaderboard/full" element={<FullLeaderboard />} />
+      <Route path="/leaderboard/full/:quizId" element={<FullLeaderboard />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }
-

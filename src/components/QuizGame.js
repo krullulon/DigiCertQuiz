@@ -17,7 +17,7 @@ const SCREEN_BACKGROUND_STYLE = {
   backgroundSize: "auto, cover",
 };
 
-export default function QuizGame({ quizId, title, questions, maxTime = 100 }) {
+export default function QuizGame({ quizId, title, questions, maxTime = 100, intro }) {
   const [screen, setScreen] = useState("intro");
   const [playerName, setPlayerName] = useState("");
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -378,7 +378,9 @@ export default function QuizGame({ quizId, title, questions, maxTime = 100 }) {
             >
               {title}
             </h1>
-            <p className="text-gray-600">This week's quiz focuses on <b>key sovereignty</b></p>
+            {intro ? (
+              <p className="text-gray-600">{intro}</p>
+            ) : null}
           </div>
 
           {error && (
@@ -408,7 +410,7 @@ export default function QuizGame({ quizId, title, questions, maxTime = 100 }) {
                   </li>
                   <li className="flex items-start">
                     <span className="text-blue-600 mr-2">•</span>
-                    <span>Only correct answers earn points</span>
+                    <span>No replays, please! Only your first score counts ^_^</span>
                   </li>
                 </ul>
               </div>
@@ -467,7 +469,7 @@ export default function QuizGame({ quizId, title, questions, maxTime = 100 }) {
               onClick={() => { setFinalScoreValue(null); setScreen("leaderboard"); }}
               className="w-full border-2 border-blue-600 text-blue-700 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-all"
             >
-              View the leaderboard top 10
+              View the leaderboard top 25
             </button>
           </div>
         </div>
@@ -632,7 +634,7 @@ export default function QuizGame({ quizId, title, questions, maxTime = 100 }) {
               ) : leaderboard.length === 0 ? (
                 <p className="text-center text-gray-600">Be the first to play!</p>
               ) : (
-                leaderboard.slice(0, 10).map((entry, index) => (
+                leaderboard.slice(0, 25).map((entry, index) => (
                   <div
                     key={index}
                     className={`flex items-center justify-between p-4 rounded-lg ${
