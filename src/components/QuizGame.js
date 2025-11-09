@@ -115,6 +115,31 @@ export default function QuizGame({ quizId, title, questions, maxTime = 100, intr
     }
   }
 
+  async function getMachineFingerprint(salt) {
+    // Browser-agnostic: exclude userAgent to approximate machine identity across browsers
+    try {
+      const nav = typeof navigator !== "undefined" ? navigator : {};
+      const scr = typeof screen !== "undefined" ? screen : {};
+      const tz = (Intl && Intl.DateTimeFormat && Intl.DateTimeFormat().resolvedOptions().timeZone) || "";
+      const parts = [
+        String(salt || ""),
+        String(nav.platform || ""),
+        String(nav.language || ""),
+        String(tz || ""),
+        String(scr.width || 0),
+        String(scr.height || 0),
+        String(scr.colorDepth || 0),
+        String(typeof devicePixelRatio !== "undefined" ? devicePixelRatio : 1),
+        String(nav.hardwareConcurrency || 0),
+        String(nav.deviceMemory || 0),
+        String("ontouchstart" in (typeof window !== "undefined" ? window : {})),
+      ];
+      return await sha256Hex(parts.join("|"));
+    } catch (_) {
+      return await sha256Hex(`fallbackMachine|${salt}|${Date.now()}`);
+    }
+  }
+
   // Load leaderboard for this quiz
   const loadLeaderboard = useCallback(async () => {
     try {
@@ -165,6 +190,7 @@ export default function QuizGame({ quizId, title, questions, maxTime = 100, intr
       // Ensure authenticated uid and token for protected write
       const { idToken, uid } = await getValidAuth();
       const fp = await getDeviceFingerprint(quizId);
+      const fpMachine = await getMachineFingerprint(quizId);
       const nameSlug = toNameSlug(name);
 
       const updates = {};
@@ -178,6 +204,8 @@ export default function QuizGame({ quizId, title, questions, maxTime = 100, intr
       };
       updates[`nameIndex/${quizId}/${nameSlug}`] = uid;
       updates[`fingerprints/${quizId}/${fp}`] = uid;
+      // Observe-only machine-level print (no enforcement in rules yet)
+      updates[`machinePrints/${quizId}/${fpMachine}`] = uid;
 
       let response = await fetch(
         `${DB_URL}/.json?auth=${encodeURIComponent(idToken)}`,
@@ -215,13 +243,15 @@ export default function QuizGame({ quizId, title, questions, maxTime = 100, intr
           const errText = await response.text();
           console.error("Save failed:", response.status, errText);
         } catch (_) {}
-        setError("Could not save score. Please try again.");
+        if (response.status === 401 || response.status === 403) {
+          setError("Could not save score. Please only play each quiz once to keep scoring fair!");
+        } else {
+          setError("Could not save score. Please try again.");
+        }
       }
     } catch (err) {
       console.error("Error saving score:", err);
-      setError(
-        "Failed to save score. Please check your Firebase configuration."
-      );
+      setError("Could not save score. Please only play each quiz once to keep scoring fair!");
     }
   };
 

@@ -4,6 +4,7 @@ Quick Links
 - Rules v1 (first‑score‑only): docs/firebase-rules.v1.json
 - Rules v2 (name/fingerprint enforcement): docs/firebase-rules.v2.json
 - Plan and guidance: docs/hardening.md
+ - Observe‑only machine prints: written under `machinePrints/{quizId}/{fpMachine}` (no enforcement in v2)
 
 Quiz IDs
 - Each quiz has an ID like `week-1-key-sovereignty`.
@@ -19,6 +20,10 @@ How to Upgrade to Rules v2 (enforce name + fingerprint)
 1) Confirm most clients have shipped (app writes `nameSlug` + `fp`).
 2) In Firebase Console → Realtime Database → Rules, paste docs/firebase-rules.v2.json and Publish.
 3) Monitor write errors; if elevated, revert to v1 and investigate.
+
+Optional: Observe‑Only Machine Prints
+- The app writes `machinePrints/{quizId}/{fpMachine}` alongside `fingerprints`. Rules v2 allow these writes but do not enforce them on leaderboard validation.
+- Use this to measure how many distinct uids share the same machine print before deciding to tighten further.
 
 Free a Device (fingerprint) to Allow a Replay (v2)
 - Go to Realtime Database → Data.
@@ -42,6 +47,7 @@ Allow a Player a Fresh Attempt (v1 or v2)
   - `leaderboard/{quizId}/{uid}`
   - `fingerprints/{quizId}/{fp}` (value of `fp` is in the player’s leaderboard record)
   - `nameIndex/{quizId}/{nameSlug}` (if you need to free the name)
+  - If you later enforce machine prints, also delete `machinePrints/{quizId}/{fpMachine}`
 
 Investigate “Permission denied” Errors
 - Second attempt from same browser: blocked by v1 (`!data.exists()`).

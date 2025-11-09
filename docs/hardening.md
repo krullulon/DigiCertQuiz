@@ -15,6 +15,7 @@ What Changed (App v1)
     - leaderboard/{quizId}/{uid}: { name, nameSlug, score, timestamp, fp }
     - nameIndex/{quizId}/{nameSlug}: uid
     - fingerprints/{quizId}/{fp}: uid
+    - machinePrints/{quizId}/{fpMachine}: uid (observe‑only; not enforced by rules v2)
   - nameSlug: sanitized, lowercased, punctuation‑stripped name (non‑PII).
   - fp: SHA‑256 hash of a small, non‑PII device fingerprint salted with quizId.
 - Existing client guards remain (localStorage flag + existing server record check).
@@ -30,9 +31,10 @@ Rules Rollout
   - Ensures each nameSlug and each fp is used by only one uid per quiz.
 
 Privacy Notes
-- No raw device attributes are stored; only a salted SHA‑256 hash (fp).
+- No raw device attributes are stored; only salted SHA‑256 hashes (fp, fpMachine).
 - nameSlug stores a normalized variant of the display name for uniqueness checks.
 - Reads remain public. Writes require anonymous auth and rules enforcement.
+- `fpMachine` is a browser‑agnostic hash used to study cross‑browser duplication. It is not enforced in rules v2.
 
 Operational Steps
 1) Apply rules v1 in Firebase console.
