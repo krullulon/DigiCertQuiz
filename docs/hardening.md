@@ -26,6 +26,7 @@ Rules Rollout
 - v2 (after app adoption): enforce name/fingerprint indices
   - File: docs/firebase-rules.v2.json
   - Requires nameSlug + fp fields on leaderboard write.
+  - Leaderboard validation allows index entries to be missing (free) or already mapped to the same uid; the multi‑path update creates them atomically at `nameIndex` and `fingerprints`, whose own rules ensure uniqueness.
   - Ensures each nameSlug and each fp is used by only one uid per quiz.
 
 Privacy Notes
