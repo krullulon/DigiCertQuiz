@@ -1,0 +1,66 @@
+Admin FAQ – DigiCert Quiz Hardening
+
+Quick Links
+- Rules v1 (first‑score‑only): docs/firebase-rules.v1.json
+- Rules v2 (name/fingerprint enforcement): docs/firebase-rules.v2.json
+- Plan and guidance: docs/hardening.md
+
+Quiz IDs
+- Each quiz has an ID like `week-1-key-sovereignty`.
+- Paths use this ID under `leaderboard/{quizId}/…`, `nameIndex/{quizId}/…`, `fingerprints/{quizId}/…`.
+
+How to Apply Rules v1 (first‑score‑only)
+1) Open Firebase Console → your project `digicert-product-quiz`.
+2) Realtime Database → Rules.
+3) Replace the contents with the JSON at docs/firebase-rules.v1.json and Publish.
+4) Optional: adjust `score` max limit if needed (default 1000).
+
+How to Upgrade to Rules v2 (enforce name + fingerprint)
+1) Confirm most clients have shipped (app writes `nameSlug` + `fp`).
+2) In Firebase Console → Realtime Database → Rules, paste docs/firebase-rules.v2.json and Publish.
+3) Monitor write errors; if elevated, revert to v1 and investigate.
+
+Free a Device (fingerprint) to Allow a Replay (v2)
+- Go to Realtime Database → Data.
+- Navigate to `fingerprints/{quizId}` and locate the hashed key for the device (fp).
+- Delete `fingerprints/{quizId}/{fp}` to release the device lock.
+
+Change/Correct a Player’s Display Name (v2)
+1) Find the player’s `uid` under `leaderboard/{quizId}` (key is the uid). Confirm by matching `name/score/timestamp`.
+2) Compute the old/new slugs:
+   - old: the value in `leaderboard/{quizId}/{uid}/nameSlug`
+   - new: lowercased, punctuation‑stripped, spaces to hyphens (same as app)
+3) Update both:
+   - Set `leaderboard/{quizId}/{uid}/name` to the new display name
+   - Set `leaderboard/{quizId}/{uid}/nameSlug` to the new slug
+   - Delete `nameIndex/{quizId}/{oldSlug}`
+   - Create `nameIndex/{quizId}/{newSlug}` with value `uid`
+
+Allow a Player a Fresh Attempt (v1 or v2)
+- v1 only (first‑score‑only): delete `leaderboard/{quizId}/{uid}`.
+- v2: also delete the device fingerprint and (optionally) the name index if reusing the name:
+  - `leaderboard/{quizId}/{uid}`
+  - `fingerprints/{quizId}/{fp}` (value of `fp` is in the player’s leaderboard record)
+  - `nameIndex/{quizId}/{nameSlug}` (if you need to free the name)
+
+Investigate “Permission denied” Errors
+- Second attempt from same browser: blocked by v1 (`!data.exists()`).
+- Incognito/same device after v2: blocked by `fingerprints` mapping.
+- Duplicate display name after v2: blocked by `nameIndex` mapping.
+
+Adjust Score Cap in Rules
+- In the rules’ `.validate`, change the upper bound (default `<= 1000`).
+- Rough formula: `maxTime × numberOfQuestions`. For the current quiz: `100 × 5 = 500`.
+
+Rollback
+- To relax restrictions: paste docs/firebase-rules.v1.json into the Rules editor and publish.
+- App remains compatible; it falls back to a single leaderboard write if index writes are denied.
+
+Where to Find a Player’s UID
+- Realtime Database → `leaderboard/{quizId}` → each child key is the player’s `uid`.
+- You can match by `name` and `score` to identify the correct record.
+
+Notes
+- The device fingerprint stored is a salted SHA‑256 hash (no raw device data).
+- Reads are public; writes require anonymous auth and pass rules checks.
+
