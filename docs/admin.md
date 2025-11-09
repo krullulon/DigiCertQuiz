@@ -25,6 +25,13 @@ Optional: Observe‑Only Machine Prints
 - The app writes `machinePrints/{quizId}/{fpMachine}` alongside `fingerprints`. Rules v2 allow these writes but do not enforce them on leaderboard validation.
 - Use this to measure how many distinct uids share the same machine print before deciding to tighten further.
 
+Enable v2.1 (Machine Prints Enforcement)
+1) Confirm adoption: recent leaderboard entries include `fpMachine` and `machinePrints` keys for most users.
+2) Check collisions: spot‑check `machinePrints/{quizId}` for duplicates mapping to different uids.
+3) In Realtime Database → Rules, paste `docs/firebase-rules.v2.1.json` and Publish.
+4) Test: first attempt (new device) saves; incognito or another browser on the same machine is blocked; duplicate name blocked.
+5) Rollback: paste `docs/firebase-rules.v2.json` if you see unexpected “Permission denied” spikes.
+
 Free a Device (fingerprint) to Allow a Replay (v2)
 - Go to Realtime Database → Data.
 - Navigate to `fingerprints/{quizId}` and locate the hashed key for the device (fp).

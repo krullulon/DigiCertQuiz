@@ -51,3 +51,22 @@ Testing Checklist
 - Incognito/new uid on same device is blocked after v2 (fp mapping).
 - Duplicate display names (after normalization) are blocked after v2 (nameIndex mapping).
 
+---
+
+Staged Tightening: v2.1 (Machine Prints Enforcement)
+
+- Purpose: Block cross‑browser replays on the same machine using a browser‑agnostic fingerprint (`fpMachine`).
+- Rules file: `docs/firebase-rules.v2.1.json`.
+- Client: Leaderboard entries already include `fpMachine`, and the app writes `machinePrints/{quizId}/{fpMachine} = uid`.
+
+Checklist before enabling v2.1
+- Adoption ≥ 95%: New leaderboard entries include `fpMachine` and matching `machinePrints` mapping.
+- Low collision risk: Few or no `machinePrints/{quizId}` collisions across different uids.
+- Admin ready: Team comfortable freeing `machinePrints/{quizId}/{fpMachine}` if a shared device is blocked.
+- Communication: Short note clarifying first score per device to keep scoring fair.
+
+Enable Steps
+1) Firebase Console → Realtime Database → Rules.
+2) Replace current rules with `docs/firebase-rules.v2.1.json` and Publish.
+3) Smoke test: first attempt saves; incognito and other browsers on same machine are blocked; duplicate name blocked.
+

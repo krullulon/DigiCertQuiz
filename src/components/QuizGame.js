@@ -201,6 +201,7 @@ export default function QuizGame({ quizId, title, questions, maxTime = 100, intr
         // Use server timestamp to avoid client clock skew
         timestamp: { ".sv": "timestamp" },
         fp,
+        fpMachine,
       };
       updates[`nameIndex/${quizId}/${nameSlug}`] = uid;
       updates[`fingerprints/${quizId}/${fp}`] = uid;
