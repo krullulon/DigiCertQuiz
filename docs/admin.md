@@ -3,12 +3,21 @@ Admin FAQ – DigiCert Quiz Hardening
 Quick Links
 - Rules v1 (first‑score‑only): docs/firebase-rules.v1.json
 - Rules v2 (name/fingerprint enforcement): docs/firebase-rules.v2.json
+- Rules v2.1 (machine prints enforcement): docs/firebase-rules.v2.1.json
 - Plan and guidance: docs/hardening.md
- - Observe‑only machine prints: written under `machinePrints/{quizId}/{fpMachine}` (no enforcement in v2)
+- Observe‑only machine prints: written under `machinePrints/{quizId}/{fpMachine}` (no enforcement in v2)
 
 Quiz IDs
 - Each quiz has an ID like `week-1-key-sovereignty`.
-- Paths use this ID under `leaderboard/{quizId}/…`, `nameIndex/{quizId}/…`, `fingerprints/{quizId}/…`.
+- Paths use this ID under `leaderboard/{quizId}/…`, `nameIndex/{quizId}/…`, `fingerprints/{quizId}/…`, `machinePrints/{quizId}/…`.
+
+Data Model (writes)
+- Leaderboard record (per user): `leaderboard/{quizId}/{uid}`
+  - Fields: `name`, `nameSlug`, `score`, `timestamp` (server set), `fp`, `fpMachine`
+- Indexes (enforced in rules):
+  - `nameIndex/{quizId}/{nameSlug}` → `uid`
+  - `fingerprints/{quizId}/{fp}` → `uid`
+  - `machinePrints/{quizId}/{fpMachine}` → `uid` (enforced only in v2.1)
 
 How to Apply Rules v1 (first‑score‑only)
 1) Open Firebase Console → your project `digicert-product-quiz`.
@@ -53,6 +62,7 @@ Investigate “Permission denied” Errors
 - Second attempt from same browser: blocked by v1 (`!data.exists()`).
 - Incognito/same device after v2: blocked by `fingerprints` mapping.
 - Duplicate display name after v2: blocked by `nameIndex` mapping.
+ - Different browser on same machine after v2.1: blocked by `machinePrints` mapping.
 
 Adjust Score Cap in Rules
 - In the rules’ `.validate`, change the upper bound (default `<= 1000`).

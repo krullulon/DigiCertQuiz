@@ -11,11 +11,11 @@ What Changed (App v1)
   - Correct answer index is recomputed per question after option shuffle.
   - Implementation: src/components/QuizGame.js (secure RNG + Fisher–Yates).
 - Multi‑path save with indexes
-  - Save score via a single PATCH at DB root with three keys:
-    - leaderboard/{quizId}/{uid}: { name, nameSlug, score, timestamp, fp }
+  - Save score via a single PATCH at DB root with keys:
+    - leaderboard/{quizId}/{uid}: { name, nameSlug, score, timestamp, fp, fpMachine }
     - nameIndex/{quizId}/{nameSlug}: uid
     - fingerprints/{quizId}/{fp}: uid
-    - machinePrints/{quizId}/{fpMachine}: uid (observe‑only; not enforced by rules v2)
+    - machinePrints/{quizId}/{fpMachine}: uid (observe‑only in v2; enforced in v2.1)
   - nameSlug: sanitized, lowercased, punctuation‑stripped name (non‑PII).
   - fp: SHA‑256 hash of a small, non‑PII device fingerprint salted with quizId.
 - Existing client guards remain (localStorage flag + existing server record check).
@@ -29,6 +29,17 @@ Rules Rollout
   - Requires nameSlug + fp fields on leaderboard write.
   - Leaderboard validation allows index entries to be missing (free) or already mapped to the same uid; the multi‑path update creates them atomically at `nameIndex` and `fingerprints`, whose own rules ensure uniqueness.
   - Ensures each nameSlug and each fp is used by only one uid per quiz.
+
+Staged Tightening (v2.1): enforce machine‑level prints
+- File: docs/firebase-rules.v2.1.json
+- Adds a browser‑agnostic machine print gate (`fpMachine`), blocking cross‑browser replays on the same machine.
+- Requires `fpMachine` in the leaderboard entry and validates that `machinePrints/{quizId}/{fpMachine}` is free or mapped to the same uid.
+
+Checklist before enabling v2.1
+- Adoption ≥ 95%: New leaderboard entries include `fpMachine` and matching `machinePrints` mapping.
+- Low collision risk: Minimal `machinePrints/{quizId}` collisions across different uids (spot‑check).
+- Admin ready: Comfortable freeing `machinePrints/{quizId}/{fpMachine}` if a shared device is blocked.
+- Communication: Short note clarifying first score per device to keep scoring fair.
 
 Privacy Notes
 - No raw device attributes are stored; only salted SHA‑256 hashes (fp, fpMachine).
