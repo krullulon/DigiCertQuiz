@@ -29,7 +29,7 @@ const quiz = {
         "Which of the following best illustrates a real-world use case for DigiCert TrustCore SDK?",
       options: [
         "A smartwatch manufacturer uses TrustCore to brace for system outages",
-        "An medical device OEM integrates TrustCore to  provide device security",
+        "A medical device OEM integrates TrustCore to  provide device security",
         "A cloud marketing platform embeds TrustCore to secure campaign conversions",
         "A social media app uses TrustCore to authenticate personalized content recommendations",
       ],
