@@ -3,6 +3,7 @@ import week2 from "./week-2-x9-extended-key-usage";
 import week3 from "./week-3-protocols";
 import week4 from "./week-4-acme";
 import week5 from "./week-5-trustcore";
+import week6 from "./week-6-dns";
 
 export const quizzes = {
   [week1.id]: week1,
@@ -10,6 +11,7 @@ export const quizzes = {
   [week3.id]: week3,
   [week4.id]: week4,
   [week5.id]: week5,
+  [week5.id]: week6,
 };
 
 export const currentQuizId = week5.id;
