@@ -11,7 +11,7 @@ export const quizzes = {
   [week3.id]: week3,
   [week4.id]: week4,
   [week5.id]: week5,
-  [week5.id]: week6,
+  [week6.id]: week6,
 };
 
 export const currentQuizId = week5.id;
